@@ -12,11 +12,20 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import java.io.IOException;
+
+import familymap.AuthToken;
+import familymap.Event;
+import familymap.Person;
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.LoginResponse;
+import response.RegisterResponse;
+import response.Response;
 
 public class LoginFragment extends Fragment {
     public static final String TAG = "LoginFragment";
@@ -101,15 +110,46 @@ public class LoginFragment extends Fragment {
         mSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LoginRequest req = new LoginRequest(userName, password);
+                try {
+                    // Use input data to generate request
+                    LoginRequest loginReq = new LoginRequest(userName, password);
+                    // Use request to login to server
+                    LoginResponse loginRes = Proxy.login(host, port, loginReq);
+
+                    // If we have an AuthToken, i.e., login was successful
+                    if (loginRes.getSuccess()) {
+                        // Attempt to get Events
+                        String token = loginRes.getAuthToken();
+                        Event[] events = Proxy.getEvents(host, port, token);
+                        DataCache.getInstance().setEvents(events);
+                        // Attempt to get Persons
+                        Person[] persons = Proxy. getPersons(host, port, token);
+                        DataCache.getInstance().setPersons(persons);
+                    } else {
+                        Toast.makeText(getActivity(),
+                                loginRes.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                } catch (IOException ex) {
+                    Toast.makeText(getActivity(),
+                            "error: internal server error",
+                            Toast.LENGTH_LONG).show();
+                }
             }
         });
 
         mRegisterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RegisterRequest req = new RegisterRequest(userName, password, email,
-                        firstName, lastName, gender);
+                try {
+                    // Use input data to generate request
+                    RegisterRequest registerReq = new RegisterRequest(userName, password, email,
+                            firstName, lastName, gender);
+                    // Use request to register with server
+                    RegisterResponse registerRes = Proxy.register(host, port, registerReq);
+
+                } catch (IOException ex) {
+                }
             }
         });
     }
@@ -270,7 +310,7 @@ public class LoginFragment extends Fragment {
                 RadioButton checked = mGenderRadio.findViewById(checkedId);
                 int index = mGenderRadio.indexOfChild(checked);
 
-                switch(index) {
+                switch (index) {
                     // First radio ("male") was checked
                     case 0:
                         gender = "m";

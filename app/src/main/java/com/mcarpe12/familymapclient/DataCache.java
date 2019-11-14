@@ -19,4 +19,20 @@ public class DataCache {
     private DataCache() {
 
     }
+
+    public Event[] getEvents() {
+        return events;
+    }
+
+    public void setEvents(Event[] events) {
+        this.events = events;
+    }
+
+    public Person[] getPersons() {
+        return persons;
+    }
+
+    public void setPersons(Person[] persons) {
+        this.persons = persons;
+    }
 }
