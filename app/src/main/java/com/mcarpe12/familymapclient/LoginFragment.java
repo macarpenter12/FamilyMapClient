@@ -1,5 +1,6 @@
 package com.mcarpe12.familymapclient;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import familymap.AuthToken;
 import familymap.Event;
@@ -48,6 +51,7 @@ public class LoginFragment extends Fragment {
     private String lastName = "";
     private String email = "";
     private String gender = "";
+    private String serverURL;
 
     private Button mSignInButton;
     private Button mRegisterButton;
@@ -111,25 +115,18 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 try {
-                    // Use input data to generate request
-                    LoginRequest loginReq = new LoginRequest(userName, password);
-                    // Use request to login to server
-                    LoginResponse loginRes = Proxy.login(host, port, loginReq);
-
-                    // If we have an AuthToken, i.e., login was successful
-                    if (loginRes.getSuccess()) {
-                        // Attempt to get Events
-                        String token = loginRes.getAuthToken();
-                        Event[] events = Proxy.getEvents(host, port, token);
-                        DataCache.getInstance().setEvents(events);
-                        // Attempt to get Persons
-                        Person[] persons = Proxy. getPersons(host, port, token);
-                        DataCache.getInstance().setPersons(persons);
-                    } else {
-                        Toast.makeText(getActivity(),
-                                loginRes.getMessage(),
-                                Toast.LENGTH_LONG).show();
+                    // Set default server URL for connections
+                    serverURL = host + ":" + port;
+                    if (!serverURL.contains("http://")) {
+                        serverURL = "http://" + serverURL;
                     }
+                    // Create URL for login task
+                    URL url = new URL(serverURL + "/user/login");
+
+                    // Call async login task
+                    LoginTask loginTask = new LoginTask();
+                    loginTask.execute(url);
+
                 } catch (IOException ex) {
                     Toast.makeText(getActivity(),
                             "error: internal server error",
@@ -149,6 +146,9 @@ public class LoginFragment extends Fragment {
                     RegisterResponse registerRes = Proxy.register(host, port, registerReq);
 
                 } catch (IOException ex) {
+                    Toast.makeText(getActivity(),
+                            "error: internal server error",
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -323,5 +323,96 @@ public class LoginFragment extends Fragment {
             }
         };
         mGenderRadio.setOnCheckedChangeListener(occl);
+    }
+
+    // Async Task that logs the user into the server
+    private class LoginTask extends AsyncTask<URL, Integer, LoginResponse> {
+
+        @Override
+        protected LoginResponse doInBackground(URL... urls) {
+            try {
+                LoginRequest loginReq = new LoginRequest(userName, password);
+                LoginResponse loginRes = Proxy.login(urls[0], loginReq);
+                return loginRes;
+            } catch (IOException ex) {
+                if (ex.getMessage() != null) {
+                    Log.d(TAG, ex.getMessage());
+                } else {
+                    Log.d(TAG, "Error logging into the server");
+                }
+                return new LoginResponse("Error logging into the server", false);
+            }
+        }
+
+        // After user has been logged in, call DataSync to get Events and Persons from the server
+        @Override
+        protected void onPostExecute(LoginResponse loginRes) {
+            if (loginRes.getAuthToken() != null) {
+                // Put auth token and PersonID into data cache for later use
+                DataCache.getInstance().setAuthToken(loginRes.getAuthToken());
+                DataCache.getInstance().setUserPersonID(loginRes.getPersonID());
+                SyncDataTask dataTask = new SyncDataTask();
+                dataTask.execute(serverURL);
+            } else {
+                Toast.makeText(getActivity(),
+                        loginRes.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    // Gets Events and Persons associated with user from the server
+    private class SyncDataTask extends AsyncTask<String, Integer, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... strings) {
+            try {
+                URL eventURL = new URL(serverURL + "/event");
+                Event[] events = Proxy.getEvents(eventURL);
+                if (events != null) {
+                    DataCache.getInstance().setEvents(events);
+                } else {
+                    return false;
+                }
+
+                URL personURL = new URL(serverURL + "/person");
+                Person[] persons = Proxy.getPersons(personURL);
+                if (persons != null) {
+                    DataCache.getInstance().setPersons(persons);
+                } else {
+                    return false;
+                }
+
+                URL onePersonURL = new URL(serverURL + "/person/" + DataCache.getInstance().getUserPersonID());
+                Person userPerson = Proxy.getOnePerson(onePersonURL);
+                if (userPerson != null) {
+                    firstName = userPerson.getFirstName();
+                    lastName = userPerson.getLastName();
+                }
+
+                return true;
+
+            } catch (IOException ex) {
+                if (ex.getMessage() != null) {
+                    Log.d(TAG, ex.getMessage());
+                } else {
+                    Log.d(TAG, "Error retrieving data from the server");
+                }
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                Toast.makeText(getActivity(),
+                        "Welcome, " + firstName + " " + lastName,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getActivity(),
+                        "Error retrieving data from the server",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

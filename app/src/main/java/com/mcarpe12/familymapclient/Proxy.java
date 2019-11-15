@@ -15,19 +15,16 @@ import familymap.Event;
 import familymap.Person;
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.DataResponse;
+import response.EventResponse;
 import response.LoginResponse;
+import response.PersonResponse;
 import response.RegisterResponse;
 
 public class Proxy {
 
 
-    public static LoginResponse login(String host, String port, LoginRequest req) throws IOException {
-        String serverURL = host + ":" + port + "/user/login";
-        if (!serverURL.contains("http://")) {
-            serverURL = "http://" + serverURL;
-        }
-        URL url = new URL(serverURL);
-
+    public static LoginResponse login(URL url, LoginRequest req) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(5000);
         connection.setRequestMethod("POST");
@@ -52,16 +49,8 @@ public class Proxy {
         return null;
     }
 
-    public static Event[] getEvents(String host, String port, String token) throws IOException {
-        return null;
-    }
-
-    public static Person[] getPersons(String host, String port, String token) throws IOException {
-        String serverURL = host + ":" + port + "/user/login";
-        if (!serverURL.contains("http://")) {
-            serverURL = "http://" + serverURL;
-        }
-        URL url = new URL(serverURL);
+    public static Event[] getEvents(URL url) throws IOException {
+        String token = DataCache.getInstance().getAuthToken();
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(5000);
@@ -72,7 +61,48 @@ public class Proxy {
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             InputStream resBody = connection.getInputStream();
             String resData = readString(resBody);
-            return deserialize(resData, Person[].class);
+            EventResponse eventRes = deserialize(resData, EventResponse.class);
+            Event[] events = eventRes.getData();
+            return events;
+        } else {
+            return null;
+        }
+    }
+
+    public static Person[] getPersons(URL url) throws IOException {
+        String token = DataCache.getInstance().getAuthToken();
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("GET");
+        connection.addRequestProperty("Authorization", token);
+        connection.connect();
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            InputStream resBody = connection.getInputStream();
+            String resData = readString(resBody);
+            PersonResponse personRes = deserialize(resData, PersonResponse.class);
+            Person[] persons = personRes.getData();
+            return persons;
+        } else {
+            return null;
+        }
+    }
+
+    public static Person getOnePerson(URL url) throws IOException {
+        String token = DataCache.getInstance().getAuthToken();
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("GET");
+        connection.addRequestProperty("Authorization", token);
+        connection.connect();
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            InputStream resBody = connection.getInputStream();
+            String resData = readString(resBody);
+            Person personRes = deserialize(resData, Person.class);
+            return personRes;
         } else {
             return null;
         }
