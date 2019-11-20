@@ -11,4 +11,9 @@
     <string name="label_login">Login</string>
     <string name="label_register">Register</string>
     <string name="toast_fail">Login Failed</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="mapFragmentMessage">Click on an event to see more info</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
