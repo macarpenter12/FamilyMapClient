@@ -23,12 +23,39 @@ import response.RegisterResponse;
 
 public class Proxy {
 
+    /**
+     * Opens and HttpURLConnection with the given URL.
+     *
+     * @param url      The URL of the server to connect to.
+     * @param method   The HTTP method to use ("GET", "POST", "DELETE", etc).
+     * @param token    Authorization token to send, or null if not needed.
+     * @param doOutput Whether the request will output data to the server.
+     * @return A connection with the desired parameters.
+     * @throws IOException Error opening a connection.
+     */
+    private static HttpURLConnection createConnection(URL url, String method,
+                                                      String token, Boolean doOutput) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setConnectTimeout(5000);
+        connection.setRequestMethod(method);
+
+        // If user specified an auth token, add it to the request header
+        if (token != null) {
+            if (token.length() > 0) {
+                connection.addRequestProperty("Authorization", token);
+            }
+        }
+
+        // If user specified that request will output, set flag
+        if (doOutput) {
+            connection.setDoOutput(true);
+        }
+
+        return connection;
+    }
 
     public static LoginResponse login(URL url, LoginRequest req) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
+        HttpURLConnection connection = createConnection(url, "POST", null, true);
         connection.connect();
 
         String reqData = serialize(req);
@@ -45,17 +72,29 @@ public class Proxy {
         }
     }
 
-    public static RegisterResponse register(String host, String port, RegisterRequest req) throws IOException {
-        return null;
+    public static RegisterResponse register(URL url, RegisterRequest req) throws IOException {
+
+        HttpURLConnection connection = createConnection(url, "POST", null, true);
+        connection.connect();
+
+        String reqData = serialize(req);
+        OutputStream reqBody = connection.getOutputStream();
+        writeString(reqData, reqBody);
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            InputStream resBody = connection.getInputStream();
+            String resData = readString(resBody);
+            RegisterResponse registerRes = deserialize(resData, RegisterResponse.class);
+            return registerRes;
+        } else {
+            return new RegisterResponse("error:" + connection.getResponseCode(), false);
+        }
     }
 
     public static Event[] getEvents(URL url) throws IOException {
         String token = DataCache.getInstance().getAuthToken();
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("GET");
-        connection.addRequestProperty("Authorization", token);
+        HttpURLConnection connection = createConnection(url, "GET", token, false);
         connection.connect();
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -72,10 +111,7 @@ public class Proxy {
     public static Person[] getPersons(URL url) throws IOException {
         String token = DataCache.getInstance().getAuthToken();
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("GET");
-        connection.addRequestProperty("Authorization", token);
+        HttpURLConnection connection = createConnection(url, "GET", token, false);
         connection.connect();
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -92,10 +128,7 @@ public class Proxy {
     public static Person getOnePerson(URL url) throws IOException {
         String token = DataCache.getInstance().getAuthToken();
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("GET");
-        connection.addRequestProperty("Authorization", token);
+        HttpURLConnection connection = createConnection(url, "GET", token, false);
         connection.connect();
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
