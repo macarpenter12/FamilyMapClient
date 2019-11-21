@@ -31,7 +31,6 @@ public class DataCache {
 
     public Event[] getEvents() {
         return events;
-//        return (Event[])eventsByPerson.entrySet().toArray();
     }
 
     public void setEvents(Event[] events) {

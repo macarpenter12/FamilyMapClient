@@ -14,6 +14,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import familymap.Event;
+
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
     public static final String ARG_TITLE = "title";
     public static final String TAG = "MapFragment";
@@ -35,10 +37,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         map = googleMap;
         map.setOnMapLoadedCallback(this);
 
+        for (Event event : DataCache.getInstance().getEvents()) {
+            LatLng eventLocation = new LatLng(event.getLatitude(), event.getLongitude());
+            map.addMarker(new MarkerOptions().position(eventLocation));
+        }
+
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        map.animateCamera(CameraUpdateFactory.newLatLng(sydney));
+//        LatLng sydney = new LatLng(-34, 151);
+//        map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+//        map.animateCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
