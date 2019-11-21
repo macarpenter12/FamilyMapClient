@@ -15,6 +15,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -341,6 +342,17 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getActivity(),
                         "Welcome, " + firstName + " " + lastName,
                         Toast.LENGTH_LONG).show();
+
+                // Switch to Map Fragment
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                MapFragment mapFragment = new MapFragment();
+                Bundle args = new Bundle();
+                args.putString(MapFragment.ARG_TITLE, "MAP FRAGMENT");
+                mapFragment.setArguments(args);
+                fm.beginTransaction()
+                        .replace(R.id.fragment_container, mapFragment)
+                        .commit();
+
             } else {
                 Toast.makeText(getActivity(),
                         response.getMessage(),

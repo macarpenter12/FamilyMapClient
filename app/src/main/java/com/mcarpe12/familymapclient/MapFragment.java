@@ -14,8 +14,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-// implements GoogleMap.OnMapLoadedCallback
-public class MapFragment extends Fragment implements OnMapReadyCallback, {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
+    public static final String ARG_TITLE = "title";
+    public static final String TAG = "MapFragment";
     private GoogleMap map;
 
     @Override
@@ -40,8 +41,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, {
         map.animateCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
-//    @Override
-//    public void onMapLoaded() {
-//
-//    }
+    @Override
+    public void onMapLoaded() {
+
+    }
 }
