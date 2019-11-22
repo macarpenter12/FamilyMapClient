@@ -29,5 +29,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation files('libs\\shared.jar')
+    implementation files('libs/shared.jar')
+    implementation('com.joanzapata.iconify:android-iconify:2.2.2',
+            { exclude group: 'com.android.support' })
+    implementation('com.joanzapata.iconify:android-iconify-fontawesome:2.2.2',
+            { exclude group: 'com.android.support' })
 }

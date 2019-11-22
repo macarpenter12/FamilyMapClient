@@ -348,6 +348,7 @@ public class LoginFragment extends Fragment {
                 MapFragment mapFragment = new MapFragment();
                 Bundle args = new Bundle();
                 args.putString(MapFragment.ARG_TITLE, "MAP FRAGMENT");
+
                 mapFragment.setArguments(args);
                 fm.beginTransaction()
                         .replace(R.id.fragment_container, mapFragment)
