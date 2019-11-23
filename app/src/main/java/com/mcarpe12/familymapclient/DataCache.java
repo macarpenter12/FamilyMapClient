@@ -89,8 +89,12 @@ public class DataCache {
             personMap.put(person.getPersonID(), person);
 
             // Store children relationships
-            childrenMap.put(person.getFatherID(), person);
-            childrenMap.put(person.getMotherID(), person);
+            if (person.getFatherID() != null) {
+                childrenMap.put(person.getFatherID(), person);
+            }
+            if (person.getMotherID() != null) {
+                childrenMap.put(person.getMotherID(), person);
+            }
         }
     }
 

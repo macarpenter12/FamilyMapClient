@@ -1,6 +1,5 @@
 package com.mcarpe12.familymapclient;
 
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
@@ -16,9 +15,15 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import familymap.Event;
 import familymap.Person;
@@ -29,9 +34,23 @@ public class MapFragment extends Fragment
         GoogleMap.OnMarkerClickListener {
     public static final String ARG_TITLE = "title";
     public static final String TAG = "MapFragment";
-    private GoogleMap map;
 
+    private GoogleMap map;
     private TextView mMapText;
+
+    private Map<String, Float> eventTypes = new HashMap<>();
+    int index = 0;
+    private float markerColors[] = {
+            BitmapDescriptorFactory.HUE_GREEN,
+            BitmapDescriptorFactory.HUE_AZURE,
+            BitmapDescriptorFactory.HUE_RED,
+            BitmapDescriptorFactory.HUE_YELLOW,
+            BitmapDescriptorFactory.HUE_VIOLET,
+            BitmapDescriptorFactory.HUE_ORANGE,
+            BitmapDescriptorFactory.HUE_CYAN,
+            BitmapDescriptorFactory.HUE_ROSE,
+            BitmapDescriptorFactory.HUE_MAGENTA
+    };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,8 +70,7 @@ public class MapFragment extends Fragment
         map = googleMap;
 
         for (Event event : DataCache.getInstance().getEvents()) {
-            LatLng eventLocation = new LatLng(event.getLatitude(), event.getLongitude());
-            map.addMarker(new MarkerOptions().position(eventLocation).title(event.getEventID()));
+            addEventMarker(event);
         }
 
         map.setOnMarkerClickListener(this);
@@ -60,8 +78,7 @@ public class MapFragment extends Fragment
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        String eventID = marker.getTitle();
-        Event event = DataCache.getInstance().findEvent(eventID);
+        Event event = (Event) marker.getTag();
         Person person = DataCache.getInstance().findPerson(event.getPersonID());
         String text = person.getFirstName() + " " + person.getLastName() + "\n"
                 + event.getType().toUpperCase() + ": "
@@ -70,12 +87,18 @@ public class MapFragment extends Fragment
         mMapText.setText(text);
 
         int iconColor;
+        FontAwesomeIcons iconGender;
         if (person.getGender().equals("m")) {
             iconColor = R.color.male_icon;
+            iconGender = FontAwesomeIcons.fa_male;
         } else {
             iconColor = R.color.female_icon;
+            iconGender = FontAwesomeIcons.fa_female;
         }
 
+        Drawable genderIcon = new IconDrawable(getActivity(), iconGender)
+                .colorRes(iconColor).sizeDp(40);
+        mMapText.setCompoundDrawablesWithIntrinsicBounds(genderIcon, null, null, null);
 
         map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         return true;
@@ -84,5 +107,32 @@ public class MapFragment extends Fragment
     @Override
     public void onMapLoaded() {
 
+    }
+
+    private void addEventMarker(Event event) {
+        LatLng eventLocation = new LatLng(event.getLatitude(), event.getLongitude());
+
+        float color = getEventColor(event);
+        Marker marker = map.addMarker(new MarkerOptions().position(eventLocation)
+                .icon(BitmapDescriptorFactory.defaultMarker(color))
+        );
+        marker.setTag(event);
+    }
+
+    /**
+     * Check the event to see if its event type has been assigned a color. If so, return the
+     * HUE_x member of BitmapDescriptorFactory that has been assigned. Else, assign it a color
+     * and return that newly assigned color.
+     *
+     * @param event The event, containing the event.type to find a color for.
+     * @return A float, corresponding to a BitmapDescriptorFactory.HUE value.
+     */
+    private float getEventColor(Event event) {
+        if (!eventTypes.containsKey(event.getType())) {
+            eventTypes.put(event.getType(), markerColors[index % markerColors.length]);
+            index++;
+        }
+
+        return eventTypes.get(event.getType());
     }
 }
