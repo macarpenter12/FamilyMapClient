@@ -39,8 +39,8 @@ public class DataCache {
         return eventMap.get(eventID);
     }
 
-    public Event[] getEventsByPerson(String personID) {
-        return (Event[]) (eventsByPerson.get(personID).toArray());
+    public List<Event> getEventsByPerson(String personID) {
+        return eventsByPerson.get(personID);
     }
 
     public void setEvents(Event[] events) {

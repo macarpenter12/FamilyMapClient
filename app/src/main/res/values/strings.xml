@@ -10,9 +10,14 @@
     <string name="label_gender">Gender:</string>
     <string name="label_login">Login</string>
     <string name="label_register">Register</string>
-    <string name="toast_fail">Login Failed</string>
+
     <string name="title_activity_maps">Map</string>
     <string name="mapFragmentMessage">Click on an event to see more info</string>
+
+    <string name="life_events_title">Life Events</string>
+    <string name="family_title">Family></string>
+    <string name="life_event_toast_text">You selected %s (Event)</string>
+    <string name="family_toast_text">You selected %s (Family Member)</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

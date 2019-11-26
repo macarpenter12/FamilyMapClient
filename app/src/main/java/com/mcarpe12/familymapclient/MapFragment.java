@@ -1,5 +1,6 @@
 package com.mcarpe12.familymapclient;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
@@ -74,6 +75,18 @@ public class MapFragment extends Fragment
         }
 
         map.setOnMarkerClickListener(this);
+        mMapText.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Event event = (Event) mMapText.getTag();
+                        String personID = event.getPersonID();
+                        Intent intent = new Intent(getActivity(), PersonActivity.class);
+                        intent.putExtra(PersonActivity.EXTRA_PERSON_ID, personID);
+                        startActivity(intent);
+                    }
+                }
+        );
     }
 
     @Override
@@ -99,6 +112,7 @@ public class MapFragment extends Fragment
         Drawable genderIcon = new IconDrawable(getActivity(), iconGender)
                 .colorRes(iconColor).sizeDp(40);
         mMapText.setCompoundDrawablesWithIntrinsicBounds(genderIcon, null, null, null);
+        mMapText.setTag(event);
 
         map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         return true;
