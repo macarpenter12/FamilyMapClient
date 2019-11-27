@@ -12,10 +12,10 @@ import familymap.Person;
 
 public class DataCache {
     private static DataCache instance;
-    private Map<String, Event> eventMap = new HashMap<>();
-    private Map<String, List<Event>> eventsByPerson = new HashMap<>();
-    private Map<String, Person> personMap = new HashMap<>();
-    private Map<String, Person> childrenMap = new HashMap<>();
+    private Map<String, Event> eventsByEventID = new HashMap<>();
+    private Map<String, List<Event>> eventsByPersonID = new HashMap<>();
+    private Map<String, Person> personsByPersonID = new HashMap<>();
+    private Map<String, Person> childrenByPersonID = new HashMap<>();
     private Event[] events;
     private Person[] persons;
     private String authToken;
@@ -51,11 +51,11 @@ public class DataCache {
     }
 
     public Event findEvent(String eventID) {
-        return eventMap.get(eventID);
+        return eventsByEventID.get(eventID);
     }
 
     public List<Event> getEventsByPerson(String personID) {
-        return eventsByPerson.get(personID);
+        return eventsByPersonID.get(personID);
     }
 
     public void setEvents(Event[] events) {
@@ -65,15 +65,15 @@ public class DataCache {
             String key = event.getPersonID();
 
             // To find event by eventID
-            eventMap.put(event.getEventID(), event);
+            eventsByEventID.put(event.getEventID(), event);
 
             // To find all events by personID
-            if (eventsByPerson.containsKey(key)) {
-                eventsByPerson.get(key).add(event);
+            if (eventsByPersonID.containsKey(key)) {
+                eventsByPersonID.get(key).add(event);
             } else {
                 List<Event> list = new ArrayList<>();
                 list.add(event);
-                eventsByPerson.put(key, list);
+                eventsByPersonID.put(key, list);
             }
         }
     }
@@ -83,7 +83,7 @@ public class DataCache {
     }
 
     public Person findPerson(String personID) {
-        return personMap.get(personID);
+        return personsByPersonID.get(personID);
     }
 
     /**
@@ -93,7 +93,7 @@ public class DataCache {
      * @return Child of given parent.
      */
     public Person findChild(String personID) {
-        return childrenMap.get(personID);
+        return childrenByPersonID.get(personID);
     }
 
     public HashMap<String, Integer> getEventTypes() {
@@ -105,14 +105,14 @@ public class DataCache {
 
         for (Person person : persons) {
             // Lookup person by ID
-            personMap.put(person.getPersonID(), person);
+            personsByPersonID.put(person.getPersonID(), person);
 
             // Store children relationships
             if (person.getFatherID() != null) {
-                childrenMap.put(person.getFatherID(), person);
+                childrenByPersonID.put(person.getFatherID(), person);
             }
             if (person.getMotherID() != null) {
-                childrenMap.put(person.getMotherID(), person);
+                childrenByPersonID.put(person.getMotherID(), person);
             }
         }
     }

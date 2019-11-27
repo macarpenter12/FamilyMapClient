@@ -35,7 +35,8 @@ public class MapFragment extends Fragment
         GoogleMap.OnMarkerClickListener {
     public static final String ARG_TITLE = "title";
     public static final String TAG = "MapFragment";
-
+    public static final String EXTRA_LAYOUT_RESOURCE = "com.mcarpe12.familymapclient.map_layout";
+    public static final String EXTRA_INIT_EVENT_ID = "com.mcarpe12.familymapclient.init_event_id";
     private GoogleMap map;
     private TextView mMapText;
 
@@ -43,7 +44,8 @@ public class MapFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(layoutInflater, container, savedInstanceState);
-        View view = layoutInflater.inflate(R.layout.fragment_map, container, false);
+        int layout = getArguments().getInt(EXTRA_LAYOUT_RESOURCE);
+        View view = layoutInflater.inflate(layout, container, false);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -60,6 +62,12 @@ public class MapFragment extends Fragment
         for (Event event : DataCache.getInstance().getEvents()) {
             addEventMarker(event);
         }
+
+        // Initialize view to given location (user's birth, unless specified)
+        String initEventID = getArguments().getString(EXTRA_INIT_EVENT_ID);
+        Event initEvent = DataCache.getInstance().findEvent(initEventID);
+        LatLng initLocation = new LatLng(initEvent.getLatitude(), initEvent.getLongitude());
+        map.animateCamera(CameraUpdateFactory.newLatLng(initLocation));
 
         map.setOnMarkerClickListener(this);
         mMapText.setOnClickListener(

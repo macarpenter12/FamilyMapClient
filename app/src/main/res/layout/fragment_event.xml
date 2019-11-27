@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity">
+    tools:context=".EventActivity">
 
     <fragment
-        android:id="@+id/map"
+        android:id="@+id/eventViewMap"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/mapTextView" />
+        android:layout_above="@id/eventViewText" />
 
     <TextView
-        android:id="@+id/mapTextView"
+        android:id="@+id/eventViewText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="12dp"

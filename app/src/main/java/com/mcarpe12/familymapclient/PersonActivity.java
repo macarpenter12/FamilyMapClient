@@ -12,11 +12,11 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import com.mcarpe12.familymapclient.service.DataCache;
@@ -198,7 +198,7 @@ public class PersonActivity extends AppCompatActivity {
         }
 
         private void initializeLifeEventView(View listItemView, final int childPosition) {
-            Event event = lifeEvents.get(childPosition);
+            final Event event = lifeEvents.get(childPosition);
             final String eventText = event.getType().toUpperCase() + ": "
                     + event.getCity() + ", " + event.getCountry() + " (" + event.getYear() + ")";
             String fullName = person.getFirstName() + " " + person.getLastName();
@@ -215,12 +215,16 @@ public class PersonActivity extends AppCompatActivity {
 
             mItemImage.setImageDrawable(bd);
 
-            listItemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(PersonActivity.this, getString(R.string.life_event_toast_text, eventText), Toast.LENGTH_SHORT).show();
-                }
-            });
+            listItemView.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(PersonActivity.this, EventActivity.class);
+                            intent.putExtra(EventActivity.EXTRA_EVENT_ID, event.getEventID());
+                            startActivity(intent);
+                        }
+                    }
+            );
         }
 
         private void initializeFamilyView(View listItemView, final int childPosition) {

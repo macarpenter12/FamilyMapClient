@@ -19,11 +19,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Add the login fragment to the activity
         FragmentManager fm = this.getSupportFragmentManager();
-        LoginFragment loginFragment = (LoginFragment) fm.findFragmentById(R.id.fragment_container);
+        LoginFragment loginFragment = (LoginFragment) fm.findFragmentById(R.id.fragment_container_main);
         if (loginFragment == null) {
             loginFragment = createLoginFragment("LOGIN FRAGMENT");
             fm.beginTransaction()
-                    .add(R.id.fragment_container, loginFragment)
+                    .add(R.id.fragment_container_main, loginFragment)
                     .commit();
         }
     }

@@ -347,14 +347,19 @@ public class LoginFragment extends Fragment {
                         Toast.LENGTH_LONG).show();
 
                 // Switch to Map Fragment
+                String userPersonID = DataCache.getInstance().getUserPersonID();
+                Event userBirth = DataCache.getInstance().getEventsByPerson(userPersonID).get(0);
+
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 MapFragment mapFragment = new MapFragment();
                 Bundle args = new Bundle();
                 args.putString(MapFragment.ARG_TITLE, "MAP FRAGMENT");
+                args.putInt(MapFragment.EXTRA_LAYOUT_RESOURCE, R.layout.fragment_map);
+                args.putString(MapFragment.EXTRA_INIT_EVENT_ID, userBirth.getEventID());
 
                 mapFragment.setArguments(args);
                 fm.beginTransaction()
-                        .replace(R.id.fragment_container, mapFragment)
+                        .replace(R.id.fragment_container_main, mapFragment)
                         .commit();
 
             } else {
