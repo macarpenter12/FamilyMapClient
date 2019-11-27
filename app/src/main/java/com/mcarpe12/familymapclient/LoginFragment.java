@@ -17,6 +17,9 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.mcarpe12.familymapclient.service.DataCache;
+import com.mcarpe12.familymapclient.service.Proxy;
+
 import java.io.IOException;
 import java.net.URL;
 

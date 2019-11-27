@@ -1,6 +1,8 @@
 package com.mcarpe12.familymapclient;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
@@ -22,8 +24,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
-
-import java.util.HashMap;
+import com.mcarpe12.familymapclient.service.DataCache;
 
 import familymap.Event;
 import familymap.Person;
@@ -37,7 +38,6 @@ public class MapFragment extends Fragment
 
     private GoogleMap map;
     private TextView mMapText;
-
 
 
     @Override
@@ -115,10 +115,23 @@ public class MapFragment extends Fragment
 
         float color = DataCache.getInstance().getEventColor(event);
         Marker marker = map.addMarker(new MarkerOptions().position(eventLocation)
-                .icon(BitmapDescriptorFactory.defaultMarker(color))
+                .icon(BitmapDescriptorFactory.fromBitmap(getEventMarkerIcon(event)))
         );
         marker.setTag(event);
     }
 
+    public Bitmap getEventMarkerIcon(Event event) {
+        int color = DataCache.getInstance().getEventColor(event);
+        Bitmap bitmap = null;
 
+        FontAwesomeIcons iconMapMarker = FontAwesomeIcons.fa_map_marker;
+        Drawable d = new IconDrawable(getActivity(), FontAwesomeIcons.fa_map_marker).colorRes(color);
+
+        bitmap = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        d.draw(canvas);
+        return bitmap;
+    }
 }

@@ -2,9 +2,9 @@ package com.mcarpe12.familymapclient;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +17,11 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.mcarpe12.familymapclient.service.DataCache;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import familymap.Event;
@@ -54,6 +53,7 @@ public class PersonActivity extends AppCompatActivity {
 
         // Add all events associated with given person
         List<Event> lifeEvents = DataCache.getInstance().getEventsByPerson(personID);
+        lifeEvents = sortEvents(lifeEvents);
 
         // Add the existing (non-null) family members in this order:
         // Father, Mother, Spouse, Child
@@ -82,7 +82,7 @@ public class PersonActivity extends AppCompatActivity {
         mLastName = findViewById(R.id.person_last_name);
         mLastName.setText(person.getLastName());
         mGender = findViewById(R.id.person_gender);
-        if (person.getGender() == "m") {
+        if (person.getGender().equals("m")) {
             mGender.setText("Male");
         } else {
             mGender.setText("Female");
@@ -209,17 +209,11 @@ public class PersonActivity extends AppCompatActivity {
             TextView itemBottomTextView = listItemView.findViewById(R.id.item_bottom_text);
             itemBottomTextView.setText(fullName);
 
-            BitmapDescriptorFactory.from
-
             // Generate gender image
             ImageView mItemImage = listItemView.findViewById(R.id.item_image);
-            float iconColor = DataCache.getInstance().getEventColor(event);
-            FontAwesomeIcons icon = FontAwesomeIcons.fa_map_marker;
+            BitmapDrawable bd = new BitmapDrawable(getResources(), getEventMarkerIcon(event));
 
-            // Set image for family members
-            Drawable markerIcon = new IconDrawable(PersonActivity.this, icon)
-                    .color(iconColor).sizeDp(40);
-            mItemImage.setImageDrawable(genderIcon);
+            mItemImage.setImageDrawable(bd);
 
             listItemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -230,7 +224,7 @@ public class PersonActivity extends AppCompatActivity {
         }
 
         private void initializeFamilyView(View listItemView, final int childPosition) {
-            Person familyMember = familyMembers.get(childPosition);
+            final Person familyMember = familyMembers.get(childPosition);
             final String fullName = familyMember.getFirstName() + " " + familyMember.getLastName();
             String relationship = "Family";
 
@@ -271,18 +265,84 @@ public class PersonActivity extends AppCompatActivity {
                     .colorRes(iconColor).sizeDp(40);
             mItemImage.setImageDrawable(genderIcon);
 
-            listItemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(PersonActivity.this, getString(R.string.family_toast_text, fullName), Toast.LENGTH_SHORT).show();
-                }
-            });
+            // If user clicks on a person, launch another PersonActivity for that person
+            listItemView.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String personID = familyMember.getPersonID();
+                            Intent intent = new Intent(PersonActivity.this, PersonActivity.class);
+                            intent.putExtra(PersonActivity.EXTRA_PERSON_ID, personID);
+                            startActivity(intent);
+                        }
+                    }
+            );
         }
-
 
         @Override
         public boolean isChildSelectable(int groupPosition, int childPosition) {
             return true;
         }
+    }
+
+    public List<Event> sortEvents(List<Event> events) {
+        // Ensure that birth event is always first and death event is always last
+        Event birth = null;
+        Event death = null;
+        for (Event event : events) {
+            if (event.getType().toLowerCase().equals("birth")) {
+                birth = event;
+            }
+            if (event.getType().toLowerCase().equals("death")) {
+                death = event;
+            }
+        }
+        events.remove(birth);
+        events.remove(death);
+
+        List<Event> sortedEvents = new ArrayList<>();
+        if (birth != null) {
+            sortedEvents.add(birth);
+        }
+
+        while (events.size() > 0) {
+            Event minEvent = events.get(0);
+            if (minEvent == null) {
+                if (death != null) {
+                    sortedEvents.add(death);
+                }
+                return sortedEvents;
+            }
+            for (Event event : events) {
+                if (event.getYear() < minEvent.getYear()) {
+                    minEvent = event;
+                } else if (event.getYear() == minEvent.getYear()) {
+                    if (event.getType().compareToIgnoreCase(minEvent.getType()) == -1) {
+                        minEvent = event;
+                    }
+                }
+            }
+            events.remove(minEvent);
+            sortedEvents.add(minEvent);
+        }
+        if (death != null) {
+            sortedEvents.add(death);
+        }
+        return sortedEvents;
+    }
+
+    public Bitmap getEventMarkerIcon(Event event) {
+        int color = DataCache.getInstance().getEventColor(event);
+        Bitmap bitmap = null;
+
+        FontAwesomeIcons iconMapMarker = FontAwesomeIcons.fa_map_marker;
+        Drawable d = new IconDrawable(PersonActivity.this, FontAwesomeIcons.fa_map_marker).colorRes(color);
+
+        bitmap = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        d.draw(canvas);
+        return bitmap;
     }
 }

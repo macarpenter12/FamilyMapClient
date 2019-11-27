@@ -1,4 +1,4 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.service;
 
 import com.google.gson.Gson;
 
@@ -15,7 +15,6 @@ import familymap.Event;
 import familymap.Person;
 import request.LoginRequest;
 import request.RegisterRequest;
-import response.DataResponse;
 import response.EventResponse;
 import response.LoginResponse;
 import response.PersonResponse;

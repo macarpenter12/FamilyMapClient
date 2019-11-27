@@ -1,6 +1,6 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.service;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.mcarpe12.familymapclient.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,18 +21,17 @@ public class DataCache {
     private String authToken;
     private String userPersonID;
 
-    private HashMap<String, Float> eventTypes = new HashMap<>();
-    int colorIndex = 0;
-    private float markerColors[] = {
-            BitmapDescriptorFactory.HUE_GREEN,
-            BitmapDescriptorFactory.HUE_AZURE,
-            BitmapDescriptorFactory.HUE_RED,
-            BitmapDescriptorFactory.HUE_YELLOW,
-            BitmapDescriptorFactory.HUE_VIOLET,
-            BitmapDescriptorFactory.HUE_ORANGE,
-            BitmapDescriptorFactory.HUE_CYAN,
-            BitmapDescriptorFactory.HUE_ROSE,
-            BitmapDescriptorFactory.HUE_MAGENTA
+    private HashMap<String, Integer> eventTypes = new HashMap<>();
+    private int colorIndex = 0;
+    private int[] markerColors = {
+            R.color.mapmarker_green,
+            R.color.mapmarker_yellow,
+            R.color.mapmarker_black,
+            R.color.mapmarker_blue,
+            R.color.mapmarker_red,
+            R.color.mapmarker_orange,
+            R.color.mapmarker_purple,
+            R.color.mapmarker_white,
     };
 
     public static DataCache getInstance() {
@@ -97,6 +96,10 @@ public class DataCache {
         return childrenMap.get(personID);
     }
 
+    public HashMap<String, Integer> getEventTypes() {
+        return eventTypes;
+    }
+
     public void setPersons(Person[] persons) {
         this.persons = persons;
 
@@ -138,7 +141,7 @@ public class DataCache {
      * @param event The event, containing the event.type to find a color for.
      * @return A float, corresponding to a BitmapDescriptorFactory.HUE value.
      */
-    public float getEventColor(Event event) {
+    public int getEventColor(Event event) {
         if (!eventTypes.containsKey(event.getType())) {
             eventTypes.put(event.getType(), markerColors[colorIndex % markerColors.length]);
             colorIndex++;
