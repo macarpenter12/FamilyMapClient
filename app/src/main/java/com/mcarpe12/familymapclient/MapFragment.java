@@ -24,7 +24,6 @@ import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import familymap.Event;
 import familymap.Person;
@@ -39,19 +38,7 @@ public class MapFragment extends Fragment
     private GoogleMap map;
     private TextView mMapText;
 
-    private Map<String, Float> eventTypes = new HashMap<>();
-    int index = 0;
-    private float markerColors[] = {
-            BitmapDescriptorFactory.HUE_GREEN,
-            BitmapDescriptorFactory.HUE_AZURE,
-            BitmapDescriptorFactory.HUE_RED,
-            BitmapDescriptorFactory.HUE_YELLOW,
-            BitmapDescriptorFactory.HUE_VIOLET,
-            BitmapDescriptorFactory.HUE_ORANGE,
-            BitmapDescriptorFactory.HUE_CYAN,
-            BitmapDescriptorFactory.HUE_ROSE,
-            BitmapDescriptorFactory.HUE_MAGENTA
-    };
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -126,27 +113,12 @@ public class MapFragment extends Fragment
     private void addEventMarker(Event event) {
         LatLng eventLocation = new LatLng(event.getLatitude(), event.getLongitude());
 
-        float color = getEventColor(event);
+        float color = DataCache.getInstance().getEventColor(event);
         Marker marker = map.addMarker(new MarkerOptions().position(eventLocation)
                 .icon(BitmapDescriptorFactory.defaultMarker(color))
         );
         marker.setTag(event);
     }
 
-    /**
-     * Check the event to see if its event type has been assigned a color. If so, return the
-     * HUE_x member of BitmapDescriptorFactory that has been assigned. Else, assign it a color
-     * and return that newly assigned color.
-     *
-     * @param event The event, containing the event.type to find a color for.
-     * @return A float, corresponding to a BitmapDescriptorFactory.HUE value.
-     */
-    private float getEventColor(Event event) {
-        if (!eventTypes.containsKey(event.getType())) {
-            eventTypes.put(event.getType(), markerColors[index % markerColors.length]);
-            index++;
-        }
 
-        return eventTypes.get(event.getType());
-    }
 }

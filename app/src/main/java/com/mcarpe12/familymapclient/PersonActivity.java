@@ -1,18 +1,28 @@
 package com.mcarpe12.familymapclient;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import familymap.Event;
@@ -28,6 +38,10 @@ public class PersonActivity extends AppCompatActivity {
 
     public static final String EXTRA_PERSON_ID = "com.mcarpe12.familymapclient.person_id";
 
+    private TextView mFirstName;
+    private TextView mLastName;
+    private TextView mGender;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,15 +55,38 @@ public class PersonActivity extends AppCompatActivity {
         // Add all events associated with given person
         List<Event> lifeEvents = DataCache.getInstance().getEventsByPerson(personID);
 
-        // Add the family members in this order:
+        // Add the existing (non-null) family members in this order:
         // Father, Mother, Spouse, Child
         List<Person> familyMembers = new ArrayList<>();
-        familyMembers.add(DataCache.getInstance().findPerson(person.getFatherID()));
-        familyMembers.add(DataCache.getInstance().findPerson(person.getMotherID()));
-        familyMembers.add(DataCache.getInstance().findPerson(person.getSpouseID()));
-        familyMembers.add(DataCache.getInstance().findChild(person.getPersonID()));
+        Person father = DataCache.getInstance().findPerson(person.getFatherID());
+        Person mother = DataCache.getInstance().findPerson(person.getMotherID());
+        Person spouse = DataCache.getInstance().findPerson(person.getSpouseID());
+        Person child = DataCache.getInstance().findChild(person.getPersonID());
+        if (father != null) {
+            familyMembers.add(father);
+        }
+        if (mother != null) {
+            familyMembers.add(mother);
+        }
+        if (spouse != null) {
+            familyMembers.add(spouse);
+        }
+        if (child != null) {
+            familyMembers.add(child);
+        }
 
         expandableListView.setAdapter(new ExpandableListAdapter(lifeEvents, familyMembers, person));
+
+        mFirstName = findViewById(R.id.person_first_name);
+        mFirstName.setText(person.getFirstName());
+        mLastName = findViewById(R.id.person_last_name);
+        mLastName.setText(person.getLastName());
+        mGender = findViewById(R.id.person_gender);
+        if (person.getGender() == "m") {
+            mGender.setText("Male");
+        } else {
+            mGender.setText("Female");
+        }
     }
 
     private class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -172,6 +209,18 @@ public class PersonActivity extends AppCompatActivity {
             TextView itemBottomTextView = listItemView.findViewById(R.id.item_bottom_text);
             itemBottomTextView.setText(fullName);
 
+            BitmapDescriptorFactory.from
+
+            // Generate gender image
+            ImageView mItemImage = listItemView.findViewById(R.id.item_image);
+            float iconColor = DataCache.getInstance().getEventColor(event);
+            FontAwesomeIcons icon = FontAwesomeIcons.fa_map_marker;
+
+            // Set image for family members
+            Drawable markerIcon = new IconDrawable(PersonActivity.this, icon)
+                    .color(iconColor).sizeDp(40);
+            mItemImage.setImageDrawable(genderIcon);
+
             listItemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -204,6 +253,23 @@ public class PersonActivity extends AppCompatActivity {
             }
             TextView itemBottomTextView = listItemView.findViewById(R.id.item_bottom_text);
             itemBottomTextView.setText(relationship);
+
+            // Generate gender image
+            ImageView mItemImage = listItemView.findViewById(R.id.item_image);
+            int iconColor;
+            FontAwesomeIcons iconGender;
+            if (familyMember.getGender().equals("m")) {
+                iconColor = R.color.male_icon;
+                iconGender = FontAwesomeIcons.fa_male;
+            } else {
+                iconColor = R.color.female_icon;
+                iconGender = FontAwesomeIcons.fa_female;
+            }
+
+            // Set image for family members
+            Drawable genderIcon = new IconDrawable(PersonActivity.this, iconGender)
+                    .colorRes(iconColor).sizeDp(40);
+            mItemImage.setImageDrawable(genderIcon);
 
             listItemView.setOnClickListener(new View.OnClickListener() {
                 @Override

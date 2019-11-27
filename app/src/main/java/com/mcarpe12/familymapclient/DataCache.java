@@ -1,5 +1,7 @@
 package com.mcarpe12.familymapclient;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,20 @@ public class DataCache {
     private Person[] persons;
     private String authToken;
     private String userPersonID;
+
+    private HashMap<String, Float> eventTypes = new HashMap<>();
+    int colorIndex = 0;
+    private float markerColors[] = {
+            BitmapDescriptorFactory.HUE_GREEN,
+            BitmapDescriptorFactory.HUE_AZURE,
+            BitmapDescriptorFactory.HUE_RED,
+            BitmapDescriptorFactory.HUE_YELLOW,
+            BitmapDescriptorFactory.HUE_VIOLET,
+            BitmapDescriptorFactory.HUE_ORANGE,
+            BitmapDescriptorFactory.HUE_CYAN,
+            BitmapDescriptorFactory.HUE_ROSE,
+            BitmapDescriptorFactory.HUE_MAGENTA
+    };
 
     public static DataCache getInstance() {
         if (instance == null) {
@@ -112,5 +128,22 @@ public class DataCache {
 
     public void setUserPersonID(String userPersonID) {
         this.userPersonID = userPersonID;
+    }
+
+    /**
+     * Check the event to see if its event type has been assigned a color. If so, return the
+     * HUE_x member of BitmapDescriptorFactory that has been assigned. Else, assign it a color
+     * and return that newly assigned color.
+     *
+     * @param event The event, containing the event.type to find a color for.
+     * @return A float, corresponding to a BitmapDescriptorFactory.HUE value.
+     */
+    public float getEventColor(Event event) {
+        if (!eventTypes.containsKey(event.getType())) {
+            eventTypes.put(event.getType(), markerColors[colorIndex % markerColors.length]);
+            colorIndex++;
+        }
+
+        return eventTypes.get(event.getType());
     }
 }

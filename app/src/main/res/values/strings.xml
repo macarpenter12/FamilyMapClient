@@ -15,7 +15,7 @@
     <string name="mapFragmentMessage">Click on an event to see more info</string>
 
     <string name="life_events_title">Life Events</string>
-    <string name="family_title">Family></string>
+    <string name="family_title">Family</string>
     <string name="life_event_toast_text">You selected %s (Event)</string>
     <string name="family_toast_text">You selected %s (Family Member)</string>
 
