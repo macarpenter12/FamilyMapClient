@@ -47,10 +47,24 @@ public class MapFragment extends Fragment
         int layout = getArguments().getInt(EXTRA_LAYOUT_RESOURCE);
         View view = layoutInflater.inflate(layout, container, false);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        // Determine the ID of the map fragment contained in the layout we are using
+        int fragmentID = 0;
+        if (layout == R.layout.fragment_event) {
+            fragmentID = R.id.eventViewMap;
+        } else {
+            fragmentID = R.id.map;
+        }
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(fragmentID);
         mapFragment.getMapAsync(this);
 
-        mMapText = view.findViewById(R.id.mapTextView);
+        // Determine the ID of the TextView at the bottom of the fragment based on the layout we are using
+        int textViewID = 0;
+        if (layout == R.layout.fragment_event) {
+            textViewID = R.id.eventTextView;
+        } else {
+            textViewID = R.id.mapTextView;
+        }
+        mMapText = view.findViewById(textViewID);
 
         return view;
     }
