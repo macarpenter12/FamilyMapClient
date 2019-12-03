@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -13,10 +14,10 @@ import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import com.mcarpe12.familymapclient.service.DataCache;
@@ -30,10 +31,6 @@ import familymap.Person;
 public class PersonActivity extends AppCompatActivity {
     private static final int LIFE_EVENTS_POSITION = 0;
     private static final int FAMILY_POSITION = 1;
-    private static final int FATHER_CHILDPOSITION = 0;
-    private static final int MOTHER_CHILDPOSITION = 1;
-    private static final int SPOUSE_CHILDPOSITION = 2;
-    private static final int CHILD_CHILDPOSITION = 3;
 
     public static final String EXTRA_PERSON_ID = "com.mcarpe12.familymapclient.person_id";
 
@@ -52,7 +49,7 @@ public class PersonActivity extends AppCompatActivity {
         ExpandableListView expandableListView = findViewById(R.id.expandableListView);
 
         // Add all events associated with given person
-        List<Event> lifeEvents = DataCache.getInstance().getEventsByPerson(personID);
+        List<Event> lifeEvents = new ArrayList<>(DataCache.getInstance().getEventsByPerson(personID));
         lifeEvents = sortEvents(lifeEvents);
 
         // Add the existing (non-null) family members in this order:
@@ -86,6 +83,19 @@ public class PersonActivity extends AppCompatActivity {
             mGender.setText("Male");
         } else {
             mGender.setText("Female");
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -230,25 +240,22 @@ public class PersonActivity extends AppCompatActivity {
         private void initializeFamilyView(View listItemView, final int childPosition) {
             final Person familyMember = familyMembers.get(childPosition);
             final String fullName = familyMember.getFirstName() + " " + familyMember.getLastName();
-            String relationship = "Family";
+            String familyMemberID = familyMember.getPersonID();
+            String relationship;
 
             TextView itemTopTextView = listItemView.findViewById(R.id.item_top_text);
             itemTopTextView.setText(fullName);
 
-            switch (childPosition) {
-                case FATHER_CHILDPOSITION:
-                    relationship = "Father";
-                    break;
-                case MOTHER_CHILDPOSITION:
-                    relationship = "Mother";
-                    break;
-                case SPOUSE_CHILDPOSITION:
-                    relationship = "Spouse";
-                    break;
-                case CHILD_CHILDPOSITION:
-                    relationship = "Child";
-                    break;
+            if (familyMemberID.equals(person.getFatherID())) {
+                relationship = "Father";
+            } else if (familyMemberID.equals(person.getMotherID())) {
+                relationship = "Mother";
+            } else if (familyMemberID.equals(person.getSpouseID())) {
+                relationship = "Spouse";
+            } else {
+                relationship = "Child";
             }
+
             TextView itemBottomTextView = listItemView.findViewById(R.id.item_bottom_text);
             itemBottomTextView.setText(relationship);
 

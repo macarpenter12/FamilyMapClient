@@ -5,6 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="male_icon">#89CFF0</color>
     <color name="female_icon">#FF69B4</color>
+    <color name="menu_icon_white">#f2f2f2</color>
 
     <color name="mapmarker_green">#009933</color>
     <color name="mapmarker_yellow">#ffff66</color>

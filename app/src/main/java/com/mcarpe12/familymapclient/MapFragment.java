@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -37,6 +40,7 @@ public class MapFragment extends Fragment
     public static final String TAG = "MapFragment";
     public static final String EXTRA_LAYOUT_RESOURCE = "com.mcarpe12.familymapclient.map_layout";
     public static final String EXTRA_INIT_EVENT_ID = "com.mcarpe12.familymapclient.init_event_id";
+    private String context;
     private GoogleMap map;
     private TextView mMapText;
 
@@ -45,11 +49,19 @@ public class MapFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(layoutInflater, container, savedInstanceState);
         int layout = getArguments().getInt(EXTRA_LAYOUT_RESOURCE);
+        if (layout == R.layout.fragment_event) {
+            context = "event";
+            setHasOptionsMenu(false);
+        } else {
+            context = "main";
+            setHasOptionsMenu(true);
+        }
         View view = layoutInflater.inflate(layout, container, false);
+        // TODO: Use a keyword to determine the context of this fragment, then make changes accordingly.
 
         // Determine the ID of the map fragment contained in the layout we are using
         int fragmentID = 0;
-        if (layout == R.layout.fragment_event) {
+        if (context.equals("event")) {
             fragmentID = R.id.eventViewMap;
         } else {
             fragmentID = R.id.map;
@@ -59,7 +71,7 @@ public class MapFragment extends Fragment
 
         // Determine the ID of the TextView at the bottom of the fragment based on the layout we are using
         int textViewID = 0;
-        if (layout == R.layout.fragment_event) {
+        if (context.equals("event")) {
             textViewID = R.id.eventTextView;
         } else {
             textViewID = R.id.mapTextView;
@@ -67,6 +79,25 @@ public class MapFragment extends Fragment
         mMapText = view.findViewById(textViewID);
 
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_main, menu);
+
+        MenuItem searchMenuItem = menu.findItem(R.id.searchMenuItem);
+        searchMenuItem.setIcon(new IconDrawable(getActivity(), FontAwesomeIcons.fa_search)
+                .colorRes(R.color.menu_icon_white)
+                .actionBarSize());
+        MenuItem settingsMenuItem = menu.findItem(R.id.settingsMenuItem);
+        settingsMenuItem.setIcon(new IconDrawable(getActivity(), FontAwesomeIcons.fa_gear)
+                .colorRes(R.color.menu_icon_white)
+                .actionBarSize());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -81,7 +112,12 @@ public class MapFragment extends Fragment
         String initEventID = getArguments().getString(EXTRA_INIT_EVENT_ID);
         Event initEvent = DataCache.getInstance().findEvent(initEventID);
         LatLng initLocation = new LatLng(initEvent.getLatitude(), initEvent.getLongitude());
-        map.animateCamera(CameraUpdateFactory.newLatLng(initLocation));
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(initLocation, 5));
+
+        // If this is an event activity, set the footer to the current event
+        if (context.equals("event")) {
+            setMapText(initEvent);
+        }
 
         map.setOnMarkerClickListener(this);
         mMapText.setOnClickListener(
@@ -100,29 +136,7 @@ public class MapFragment extends Fragment
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        Event event = (Event) marker.getTag();
-        Person person = DataCache.getInstance().findPerson(event.getPersonID());
-        String text = person.getFirstName() + " " + person.getLastName() + "\n"
-                + event.getType().toUpperCase() + ": "
-                + event.getCity() + ", " + event.getCountry()
-                + " (" + event.getYear() + ")";
-        mMapText.setText(text);
-
-        int iconColor;
-        FontAwesomeIcons iconGender;
-        if (person.getGender().equals("m")) {
-            iconColor = R.color.male_icon;
-            iconGender = FontAwesomeIcons.fa_male;
-        } else {
-            iconColor = R.color.female_icon;
-            iconGender = FontAwesomeIcons.fa_female;
-        }
-
-        Drawable genderIcon = new IconDrawable(getActivity(), iconGender)
-                .colorRes(iconColor).sizeDp(40);
-        mMapText.setCompoundDrawablesWithIntrinsicBounds(genderIcon, null, null, null);
-        mMapText.setTag(event);
-
+        setMapText((Event) marker.getTag());
         map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         return true;
     }
@@ -155,5 +169,29 @@ public class MapFragment extends Fragment
         d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         d.draw(canvas);
         return bitmap;
+    }
+
+    private void setMapText(Event event) {
+        Person person = DataCache.getInstance().findPerson(event.getPersonID());
+        String text = person.getFirstName() + " " + person.getLastName() + "\n"
+                + event.getType().toUpperCase() + ": "
+                + event.getCity() + ", " + event.getCountry()
+                + " (" + event.getYear() + ")";
+        mMapText.setText(text);
+
+        int iconColor;
+        FontAwesomeIcons iconGender;
+        if (person.getGender().equals("m")) {
+            iconColor = R.color.male_icon;
+            iconGender = FontAwesomeIcons.fa_male;
+        } else {
+            iconColor = R.color.female_icon;
+            iconGender = FontAwesomeIcons.fa_female;
+        }
+
+        Drawable genderIcon = new IconDrawable(getActivity(), iconGender)
+                .colorRes(iconColor).sizeDp(40);
+        mMapText.setCompoundDrawablesWithIntrinsicBounds(genderIcon, null, null, null);
+        mMapText.setTag(event);
     }
 }
