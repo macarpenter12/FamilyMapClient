@@ -97,7 +97,16 @@ public class MapFragment extends Fragment
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.searchMenuItem:
+                Intent intent = new Intent(getActivity(), SearchActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.settingsMenuItem:
+                return super.onOptionsItemSelected(item);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

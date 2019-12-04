@@ -1,41 +1,111 @@
 package com.mcarpe12.familymapclient;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.Layout;
+import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import com.mcarpe12.familymapclient.service.DataCache;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import familymap.Event;
 import familymap.Person;
 
-public class SearchListFragment extends Fragment {
+public class SearchListFragment extends Fragment
+        implements SearchView.OnQueryTextListener {
+    public static final String ARG_TITLE = "title";
+
+    private SearchView mSearchView;
     private RecyclerView mSearchRecyclerView;
+    private SearchAdapter mAdapter;
+
+    private List<Person> mPersons = new ArrayList<>();
+    private List<Event> mEvents = new ArrayList<>();
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
+
+        mSearchView = view.findViewById(R.id.search_bar);
+        mSearchView.setOnQueryTextListener(this);
+        mSearchRecyclerView = view.findViewById(R.id.search_recycler_view);
+        mSearchRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAdapter = new SearchAdapter(mPersons, mEvents);
+        mSearchRecyclerView.setAdapter(mAdapter);
+
+        return view;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        updateUI(mSearchView.getQuery().toString());
+        return true;
+    }
+
+    private void updateUI(String term) {
+        Person[] persons = DataCache.getInstance().getPersons();
+        Event[] events = DataCache.getInstance().getEvents();
+        mPersons.clear();
+        mEvents.clear();
+
+        // Add all matching Persons
+        for (Person person : persons) {
+            if (person.getFirstName().toLowerCase().contains(term)
+                    || person.getLastName().toLowerCase().contains(term)) {
+                mPersons.add(person);
+            }
+        }
+
+        // Add all matching Events
+        for (Event event : events) {
+            Person person = DataCache.getInstance().findPerson(event.getPersonID());
+            if (event.getType().toLowerCase().contains(term)
+                    || event.getCity().toLowerCase().contains(term)
+                    || event.getCountry().toLowerCase().contains(term)
+                    || person.getFirstName().toLowerCase().contains(term)
+                    || person.getLastName().toLowerCase().contains(term)) {
+                mEvents.add(event);
+            }
+        }
+
+        // Update Recycler View
+        mAdapter.notifyDataSetChanged();
+    }
 
     private class SearchHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
-
-        private Person mPerson;
-        private Event mEvent;
 
         private final TextView mItemTopText;
         private final TextView mItemBottomText;
         private final ImageView mItemImage;
 
+        private Person mPerson;
+        private Event mEvent;
 
         public SearchHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_item, parent, false));
@@ -48,13 +118,14 @@ public class SearchListFragment extends Fragment {
 
         void bind(Person person) {
             mPerson = person;
-            String name = mPerson.getFirstName() + " " + mPerson.getLastName();
+            String name = person.getFirstName() + " " + person.getLastName();
             mItemTopText.setText(name);
+            mItemBottomText.setText("");
 
             // Generate gender image
             int iconColor;
             FontAwesomeIcons iconGender;
-            if (mPerson.getGender().equals("m")) {
+            if (person.getGender().equals("m")) {
                 iconColor = R.color.male_icon;
                 iconGender = FontAwesomeIcons.fa_male;
             } else {
@@ -86,7 +157,16 @@ public class SearchListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-
+            if (this.getAdapterPosition() < mPersons.size()) {
+                String personID = mPerson.getPersonID();
+                Intent intent = new Intent(getActivity(), PersonActivity.class);
+                intent.putExtra(PersonActivity.EXTRA_PERSON_ID, personID);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getActivity(), EventActivity.class);
+                intent.putExtra(EventActivity.EXTRA_EVENT_ID, mEvent.getEventID());
+                startActivity(intent);
+            }
         }
     }
 
