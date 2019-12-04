@@ -34,4 +34,5 @@ dependencies {
             { exclude group: 'com.android.support' })
     implementation('com.joanzapata.iconify:android-iconify-fontawesome:2.2.2',
             { exclude group: 'com.android.support' })
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }

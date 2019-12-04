@@ -1,5 +1,12 @@
 package com.mcarpe12.familymapclient.service;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import com.mcarpe12.familymapclient.R;
 
 import java.util.ArrayList;
@@ -148,5 +155,19 @@ public class DataCache {
         }
 
         return eventTypes.get(event.getType());
+    }
+
+    public Bitmap getEventMarkerIcon(Context context, Event event) {
+        int color = getEventColor(event);
+
+        FontAwesomeIcons iconMapMarker = FontAwesomeIcons.fa_map_marker;
+        Drawable d = new IconDrawable(context, iconMapMarker).colorRes(color);
+
+        Bitmap bitmap = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        d.draw(canvas);
+        return bitmap;
     }
 }

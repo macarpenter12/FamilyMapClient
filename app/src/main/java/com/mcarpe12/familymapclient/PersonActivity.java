@@ -1,5 +1,6 @@
 package com.mcarpe12.familymapclient;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -219,9 +220,10 @@ public class PersonActivity extends AppCompatActivity {
             TextView itemBottomTextView = listItemView.findViewById(R.id.item_bottom_text);
             itemBottomTextView.setText(fullName);
 
-            // Generate gender image
+            // Generate event marker image
             ImageView mItemImage = listItemView.findViewById(R.id.item_image);
-            BitmapDrawable bd = new BitmapDrawable(getResources(), getEventMarkerIcon(event));
+            Bitmap markerIcon = DataCache.getInstance().getEventMarkerIcon(PersonActivity.this, event);
+            BitmapDrawable bd = new BitmapDrawable(getResources(), markerIcon);
 
             mItemImage.setImageDrawable(bd);
 
@@ -340,20 +342,5 @@ public class PersonActivity extends AppCompatActivity {
             sortedEvents.add(death);
         }
         return sortedEvents;
-    }
-
-    public Bitmap getEventMarkerIcon(Event event) {
-        int color = DataCache.getInstance().getEventColor(event);
-        Bitmap bitmap = null;
-
-        FontAwesomeIcons iconMapMarker = FontAwesomeIcons.fa_map_marker;
-        Drawable d = new IconDrawable(PersonActivity.this, FontAwesomeIcons.fa_map_marker).colorRes(color);
-
-        bitmap = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-
-        d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        d.draw(canvas);
-        return bitmap;
     }
 }
