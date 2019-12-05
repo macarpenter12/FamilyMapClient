@@ -298,7 +298,11 @@ public class PersonActivity extends AppCompatActivity {
         }
     }
 
-    public List<Event> sortEvents(List<Event> events) {
+    public static List<Event> sortEvents(List<Event> events) {
+        if (events == null) {
+            return null;
+        }
+
         // Ensure that birth event is always first and death event is always last
         Event birth = null;
         Event death = null;

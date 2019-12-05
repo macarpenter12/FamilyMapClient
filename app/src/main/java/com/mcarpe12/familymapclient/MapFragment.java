@@ -3,6 +3,7 @@ package com.mcarpe12.familymapclient;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
@@ -25,9 +26,14 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import com.mcarpe12.familymapclient.service.DataCache;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import familymap.Event;
 import familymap.Person;
@@ -43,7 +49,7 @@ public class MapFragment extends Fragment
     private String context;
     private GoogleMap map;
     private TextView mMapText;
-
+    private List<Polyline> polylines = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -146,6 +152,9 @@ public class MapFragment extends Fragment
     @Override
     public boolean onMarkerClick(Marker marker) {
         setMapText((Event) marker.getTag());
+        removeLines();
+        drawLines((Event) marker.getTag(), 8);
+
         map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         return true;
     }
@@ -202,5 +211,72 @@ public class MapFragment extends Fragment
                 .colorRes(iconColor).sizeDp(40);
         mMapText.setCompoundDrawablesWithIntrinsicBounds(genderIcon, null, null, null);
         mMapText.setTag(event);
+    }
+
+    private void drawLines(Event event, int width) {
+        if (event == null) {
+            return;
+        }
+
+        Person person = DataCache.getInstance().findPerson(event.getPersonID());
+
+        // Draw spouse line
+        Event sBirth = getBirth(person.getSpouseID());
+        drawOneLine(event, sBirth, width, Color.GREEN);
+
+        // Draw father line
+        Event fBirth = getBirth(person.getFatherID());
+        drawOneLine(event, fBirth, width, Color.BLUE);
+
+        // Draw mother line
+        Event mBirth = getBirth(person.getMotherID());
+        drawOneLine(event, mBirth, width, Color.RED);
+
+        // Recursively draw parent lines
+        drawLines(fBirth, width - 2);
+        drawLines(mBirth, width - 2);
+    }
+
+    private void drawOneLine(Event event1, Event event2, int width, int color) {
+        if (event1 == null || event2 == null) {
+            return;
+        }
+        if (width < 0) {
+            width = 2;
+        }
+
+        Polyline line = map.addPolyline(new PolylineOptions()
+                .add(new LatLng(event1.getLatitude(), event1.getLongitude()),
+                        new LatLng(event2.getLatitude(), event2.getLongitude()))
+                .width(width)
+                .color(color));
+        polylines.add(line);
+    }
+
+    private void removeLines() {
+        for (Polyline line : polylines) {
+            line.remove();
+        }
+        polylines.clear();
+    }
+
+    /**
+     * Get given Person's birth event. If there is no birth, get the first chronological event.
+     * Reuses PersonActivity's sorting method to organize life events.
+     *
+     * @param personID ID of person to get birth event for.
+     * @return Birth event (or first chronological event) of given person.
+     */
+    private Event getBirth(String personID) {
+        Event birth = null;
+        List<Event> lifeEvents = DataCache.getInstance().getEventsByPerson(personID);
+        if (lifeEvents != null) {
+            List<Event> eventList = new ArrayList<>(lifeEvents);
+            eventList = PersonActivity.sortEvents(eventList);
+            if (eventList.size() > 0) {
+                birth = eventList.get(0);
+            }
+        }
+        return birth;
     }
 }

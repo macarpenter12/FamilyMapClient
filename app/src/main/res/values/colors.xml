@@ -15,4 +15,7 @@
     <color name="mapmarker_orange">#ff6600</color>
     <color name="mapmarker_purple">#9933ff</color>
     <color name="mapmarker_white">#f2f2f2</color>
+    <color name="mapmarker_cyan">#66ffff</color>
+    <color name="mapmarker_magenta">#ff66ff</color>
+    <color name="mapmerker_pink">#ff82b4</color>
 </resources>

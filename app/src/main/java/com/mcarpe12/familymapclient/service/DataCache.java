@@ -39,7 +39,18 @@ public class DataCache {
             R.color.mapmarker_orange,
             R.color.mapmarker_purple,
             R.color.mapmarker_white,
+            R.color.mapmarker_cyan,
+            R.color.mapmarker_magenta,
+            R.color.mapmerker_pink
     };
+
+    private boolean lifeStoryLines = true;
+    private boolean familyTreeLines = true;
+    private boolean spouseLines = false;
+    private boolean filter_father = true;
+    private boolean filter_mother = true;
+    private boolean filter_male = true;
+    private boolean filter_female = true;
 
     public static DataCache getInstance() {
         if (instance == null) {
@@ -62,7 +73,11 @@ public class DataCache {
     }
 
     public List<Event> getEventsByPerson(String personID) {
-        return eventsByPersonID.get(personID);
+        if (eventsByPersonID.containsKey(personID)) {
+            return eventsByPersonID.get(personID);
+        } else {
+            return null;
+        }
     }
 
     public void setEvents(Event[] events) {
