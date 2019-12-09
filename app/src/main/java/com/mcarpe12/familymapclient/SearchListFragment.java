@@ -69,7 +69,7 @@ public class SearchListFragment extends Fragment
 
     private void updateUI(String term) {
         Person[] persons = DataCache.getInstance().getPersons();
-        Event[] events = DataCache.getInstance().getEvents();
+        List<Event> events = DataCache.getInstance().getEvents();
         mPersons.clear();
         mEvents.clear();
 

@@ -9,7 +9,9 @@ import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import com.mcarpe12.familymapclient.R;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,8 @@ public class DataCache {
     private Person[] persons;
     private String authToken;
     private String userPersonID;
+
+    private Person userPerson;
 
     private HashMap<String, Integer> eventTypes = new HashMap<>();
     private int colorIndex = 0;
@@ -47,10 +51,66 @@ public class DataCache {
     private boolean lifeStoryLines = true;
     private boolean familyTreeLines = true;
     private boolean spouseLines = false;
-    private boolean filter_father = true;
-    private boolean filter_mother = true;
-    private boolean filter_male = true;
-    private boolean filter_female = true;
+    private boolean filterFatherSide = true;
+    private boolean filterMotherSide = true;
+    private boolean filterMaleEvents = true;
+    private boolean filterFemaleEvents = true;
+
+    public boolean isLifeStoryLines() {
+        return lifeStoryLines;
+    }
+
+    public void setLifeStoryLines(boolean lifeStoryLines) {
+        this.lifeStoryLines = lifeStoryLines;
+    }
+
+    public boolean isFamilyTreeLines() {
+        return familyTreeLines;
+    }
+
+    public void setFamilyTreeLines(boolean familyTreeLines) {
+        this.familyTreeLines = familyTreeLines;
+    }
+
+    public boolean isSpouseLines() {
+        return spouseLines;
+    }
+
+    public void setSpouseLines(boolean spouseLines) {
+        this.spouseLines = spouseLines;
+    }
+
+    public boolean isFilterFatherSide() {
+        return filterFatherSide;
+    }
+
+    public void setFilterFatherSide(boolean filterFatherSide) {
+        this.filterFatherSide = filterFatherSide;
+    }
+
+    public boolean isFilterMotherSide() {
+        return filterMotherSide;
+    }
+
+    public void setFilterMotherSide(boolean filterMotherSide) {
+        this.filterMotherSide = filterMotherSide;
+    }
+
+    public boolean isFilterMaleEvents() {
+        return filterMaleEvents;
+    }
+
+    public void setFilterMaleEvents(boolean filterMaleEvents) {
+        this.filterMaleEvents = filterMaleEvents;
+    }
+
+    public boolean isFilterFemaleEvents() {
+        return filterFemaleEvents;
+    }
+
+    public void setFilterFemaleEvents(boolean filterFemaleEvents) {
+        this.filterFemaleEvents = filterFemaleEvents;
+    }
 
     public static DataCache getInstance() {
         if (instance == null) {
@@ -64,8 +124,8 @@ public class DataCache {
 
     }
 
-    public Event[] getEvents() {
-        return events;
+    public List<Event> getEvents() {
+        return Arrays.asList(events);
     }
 
     public Event findEvent(String eventID) {
@@ -98,6 +158,127 @@ public class DataCache {
                 eventsByPersonID.put(key, list);
             }
         }
+    }
+
+    public static List<Event> sortEvents(List<Event> events) {
+        if (events == null) {
+            return null;
+        }
+        ArrayList<Event> eventsCopy = new ArrayList<>(events);
+
+        // Ensure that birth event is always first and death event is always last
+        Event birth = null;
+        Event death = null;
+        for (Event event : eventsCopy) {
+            if (event.getType().toLowerCase().equals("birth")) {
+                birth = event;
+            }
+            if (event.getType().toLowerCase().equals("death")) {
+                death = event;
+            }
+        }
+        eventsCopy.remove(birth);
+        eventsCopy.remove(death);
+
+        List<Event> sortedEvents = new ArrayList<>();
+        if (birth != null) {
+            sortedEvents.add(birth);
+        }
+
+        while (eventsCopy.size() > 0) {
+            Event minEvent = eventsCopy.get(0);
+            if (minEvent == null) {
+                if (death != null) {
+                    sortedEvents.add(death);
+                }
+                return sortedEvents;
+            }
+            for (Event event : eventsCopy) {
+                if (event.getYear() < minEvent.getYear()) {
+                    minEvent = event;
+                } else if (event.getYear() == minEvent.getYear()) {
+                    if (event.getType().compareToIgnoreCase(minEvent.getType()) == -1) {
+                        minEvent = event;
+                    }
+                }
+            }
+            eventsCopy.remove(minEvent);
+            sortedEvents.add(minEvent);
+        }
+        if (death != null) {
+            sortedEvents.add(death);
+        }
+        return sortedEvents;
+    }
+
+    /**
+     * Applies the active filters to the given set of events, filtering them by
+     *
+     * @param events
+     */
+    public List<Event> applyFilters(List<Event> events) {
+        Person father = findPerson(DataCache.getInstance().getUserPerson().getFatherID());
+        Person mother = findPerson(DataCache.getInstance().getUserPerson().getMotherID());
+        if (!DataCache.getInstance().isFilterFatherSide()) {
+            events = removeAncestorEvents(father, events);
+        }
+        if (!DataCache.getInstance().isFilterMotherSide()) {
+            events = removeAncestorEvents(mother, events);
+        }
+        if (!DataCache.getInstance().isFilterMaleEvents()) {
+            events = removeEventsByGender("m", events);
+        }
+        if (!DataCache.getInstance().isFilterFemaleEvents()) {
+            events = removeEventsByGender("f", events);
+        }
+        return events;
+    }
+
+    /**
+     * Recursively removes events of the given person and the events of that peron's ancestors
+     *
+     * @param person Person for whom to delete their events and their ancestor events
+     * @param events List of events to filter
+     * @return Filtered list of events after ancestor events have been removed
+     */
+    public List<Event> removeAncestorEvents(Person person, List<Event> events) {
+        if (events == null || person == null) {
+            return events;
+        }
+
+        List<Event> eventsToRemove = new ArrayList<>();
+
+        // Remove the given person's events
+        for (Event event : events) {
+            if (event.getPersonID().equals(person.getPersonID())) {
+                eventsToRemove.add(event);
+            }
+        }
+        events.removeAll(eventsToRemove);
+
+        // Recursively remove all ancestor events
+        Person father = DataCache.getInstance().findPerson(person.getFatherID());
+        Person mother = DataCache.getInstance().findPerson(person.getMotherID());
+        events = removeAncestorEvents(father, events);
+        events = removeAncestorEvents(mother, events);
+        return events;
+    }
+
+    public List<Event> removeEventsByGender(String gender, List<Event> events) {
+        if (events == null) {
+            return null;
+        }
+
+        List<Event> eventsToRemove = new ArrayList<>();
+
+        for (Event event : events) {
+            if (findPerson(event.getPersonID()).getGender().equals(gender)) {
+                eventsToRemove.add(event);
+            }
+        }
+        events.removeAll(eventsToRemove);
+
+        return events;
     }
 
     public Person[] getPersons() {
@@ -153,6 +334,14 @@ public class DataCache {
 
     public void setUserPersonID(String userPersonID) {
         this.userPersonID = userPersonID;
+    }
+
+    public Person getUserPerson() {
+        return userPerson;
+    }
+
+    public void setUserPerson(Person userPerson) {
+        this.userPerson = userPerson;
     }
 
     /**

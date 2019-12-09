@@ -46,20 +46,21 @@ public class PersonActivity extends AppCompatActivity {
 
         String personID = getIntent().getStringExtra(EXTRA_PERSON_ID);
         Person person = DataCache.getInstance().findPerson(personID);
-
-        ExpandableListView expandableListView = findViewById(R.id.expandableListView);
-
-        // Add all events associated with given person
-        List<Event> lifeEvents = new ArrayList<>(DataCache.getInstance().getEventsByPerson(personID));
-        lifeEvents = sortEvents(lifeEvents);
-
-        // Add the existing (non-null) family members in this order:
-        // Father, Mother, Spouse, Child
-        List<Person> familyMembers = new ArrayList<>();
         Person father = DataCache.getInstance().findPerson(person.getFatherID());
         Person mother = DataCache.getInstance().findPerson(person.getMotherID());
         Person spouse = DataCache.getInstance().findPerson(person.getSpouseID());
         Person child = DataCache.getInstance().findChild(person.getPersonID());
+
+        ExpandableListView expandableListView = findViewById(R.id.expandableListView);
+
+        // Add all events associated with given person and apply filters
+        List<Event> lifeEvents = new ArrayList<>(DataCache.getInstance().getEventsByPerson(personID));
+        lifeEvents = DataCache.sortEvents(lifeEvents);
+        lifeEvents = DataCache.getInstance().applyFilters(lifeEvents);
+
+        // Add the existing (non-null) family members in this order:
+        // Father, Mother, Spouse, Child
+        List<Person> familyMembers = new ArrayList<>();
         if (father != null) {
             familyMembers.add(father);
         }
@@ -296,55 +297,5 @@ public class PersonActivity extends AppCompatActivity {
         public boolean isChildSelectable(int groupPosition, int childPosition) {
             return true;
         }
-    }
-
-    public static List<Event> sortEvents(List<Event> events) {
-        if (events == null) {
-            return null;
-        }
-
-        // Ensure that birth event is always first and death event is always last
-        Event birth = null;
-        Event death = null;
-        for (Event event : events) {
-            if (event.getType().toLowerCase().equals("birth")) {
-                birth = event;
-            }
-            if (event.getType().toLowerCase().equals("death")) {
-                death = event;
-            }
-        }
-        events.remove(birth);
-        events.remove(death);
-
-        List<Event> sortedEvents = new ArrayList<>();
-        if (birth != null) {
-            sortedEvents.add(birth);
-        }
-
-        while (events.size() > 0) {
-            Event minEvent = events.get(0);
-            if (minEvent == null) {
-                if (death != null) {
-                    sortedEvents.add(death);
-                }
-                return sortedEvents;
-            }
-            for (Event event : events) {
-                if (event.getYear() < minEvent.getYear()) {
-                    minEvent = event;
-                } else if (event.getYear() == minEvent.getYear()) {
-                    if (event.getType().compareToIgnoreCase(minEvent.getType()) == -1) {
-                        minEvent = event;
-                    }
-                }
-            }
-            events.remove(minEvent);
-            sortedEvents.add(minEvent);
-        }
-        if (death != null) {
-            sortedEvents.add(death);
-        }
-        return sortedEvents;
     }
 }

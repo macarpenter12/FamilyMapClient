@@ -20,4 +20,20 @@
     <string name="settingsMenu">Settings</string>
     <string name="searchMenu">Search</string>
     <string name="homeMenuItem">Home</string>
+    <string name="life_story_lines">Life Story Lines</string>
+    <string name="sub_life_story_lines">Show lines between life events for a person</string>
+    <string name="family_tree_lines">Family Tree Lines</string>
+    <string name="sub_family_tree_lines">Show lines between between family members</string>
+    <string name="spouse_lines">Spouse Lines</string>
+    <string name="sub_spouse_lines">Show lines between spouses</string>
+    <string name="filter_father_side">Father\'s Side</string>
+    <string name="sub_filter_father_side">Filter events by father\'s side</string>
+    <string name="filter_mother_side">Mother\'s Side</string>
+    <string name="sub_filter_mother_side">Filter events by mother\'s side</string>
+    <string name="male_events">Male Events</string>
+    <string name="female_events">Female Events</string>
+    <string name="sub_male_events">Filter events associated with males</string>
+    <string name="sub_female_events">Filter events associated with females</string>
+    <string name="logout">Logout</string>
+    <string name="sub_logout">Return to login screen</string>
 </resources>

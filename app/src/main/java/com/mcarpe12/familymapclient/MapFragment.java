@@ -50,6 +50,7 @@ public class MapFragment extends Fragment
     private GoogleMap map;
     private TextView mMapText;
     private List<Polyline> polylines = new ArrayList<>();
+    private final int POLYLINE_WIDTH = 8;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -105,11 +106,13 @@ public class MapFragment extends Fragment
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.searchMenuItem:
-                Intent intent = new Intent(getActivity(), SearchActivity.class);
-                startActivity(intent);
+                Intent intentSearch = new Intent(getActivity(), SearchActivity.class);
+                startActivity(intentSearch);
                 return true;
             case R.id.settingsMenuItem:
-                return super.onOptionsItemSelected(item);
+                Intent intentSettings = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intentSettings);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -118,8 +121,11 @@ public class MapFragment extends Fragment
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
+        List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
+        events = DataCache.sortEvents(events);
+        events = DataCache.getInstance().applyFilters(events);
 
-        for (Event event : DataCache.getInstance().getEvents()) {
+        for (Event event : events) {
             addEventMarker(event);
         }
 
@@ -153,7 +159,7 @@ public class MapFragment extends Fragment
     public boolean onMarkerClick(Marker marker) {
         setMapText((Event) marker.getTag());
         removeLines();
-        drawLines((Event) marker.getTag(), 8);
+        drawLines((Event) marker.getTag(), POLYLINE_WIDTH);
 
         map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
         return true;
@@ -220,9 +226,37 @@ public class MapFragment extends Fragment
 
         Person person = DataCache.getInstance().findPerson(event.getPersonID());
 
-        // Draw spouse line
-        Event sBirth = getBirth(person.getSpouseID());
-        drawOneLine(event, sBirth, width, Color.GREEN);
+        // Draw person's life story lines if setting is on
+        if (DataCache.getInstance().isLifeStoryLines()) {
+            List<Event> lifeEvents = DataCache.getInstance().getEventsByPerson(person.getPersonID());
+            lifeEvents = DataCache.sortEvents(lifeEvents);
+            int i = 0;
+            int j = 1;
+            while (j < lifeEvents.size()) {
+                drawOneLine(lifeEvents.get(i), lifeEvents.get(j), width, Color.BLACK);
+                i++;
+                j++;
+            }
+        }
+
+        // Draw spouse line if setting is on
+        if (DataCache.getInstance().isSpouseLines()) {
+            Event sBirth = getBirth(person.getSpouseID());
+            drawOneLine(event, sBirth, width, Color.GREEN);
+        }
+
+        // Draw family lines if setting is on
+        if (DataCache.getInstance().isFamilyTreeLines()) {
+            drawParentLines(event, width);
+        }
+    }
+
+    private void drawParentLines(Event event, int width) {
+        if (event == null) {
+            return;
+        }
+
+        Person person = DataCache.getInstance().findPerson(event.getPersonID());
 
         // Draw father line
         Event fBirth = getBirth(person.getFatherID());
@@ -233,8 +267,8 @@ public class MapFragment extends Fragment
         drawOneLine(event, mBirth, width, Color.RED);
 
         // Recursively draw parent lines
-        drawLines(fBirth, width - 2);
-        drawLines(mBirth, width - 2);
+        drawParentLines(fBirth, width - 2);
+        drawParentLines(mBirth, width - 2);
     }
 
     private void drawOneLine(Event event1, Event event2, int width, int color) {
@@ -272,7 +306,7 @@ public class MapFragment extends Fragment
         List<Event> lifeEvents = DataCache.getInstance().getEventsByPerson(personID);
         if (lifeEvents != null) {
             List<Event> eventList = new ArrayList<>(lifeEvents);
-            eventList = PersonActivity.sortEvents(eventList);
+            eventList = DataCache.sortEvents(eventList);
             if (eventList.size() > 0) {
                 birth = eventList.get(0);
             }

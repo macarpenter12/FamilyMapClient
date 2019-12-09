@@ -323,6 +323,7 @@ public class LoginFragment extends Fragment {
 
                 URL onePersonURL = new URL(serverURL + "/person/" + DataCache.getInstance().getUserPersonID());
                 Person userPerson = Proxy.getOnePerson(onePersonURL);
+                DataCache.getInstance().setUserPerson(userPerson);
                 if (userPerson != null) {
                     firstName = userPerson.getFirstName();
                     lastName = userPerson.getLastName();
