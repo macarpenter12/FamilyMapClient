@@ -1,5 +1,6 @@
 package com.mcarpe12.familymapclient;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -46,11 +48,12 @@ public class MapFragment extends Fragment
     public static final String TAG = "MapFragment";
     public static final String EXTRA_LAYOUT_RESOURCE = "com.mcarpe12.familymapclient.map_layout";
     public static final String EXTRA_INIT_EVENT_ID = "com.mcarpe12.familymapclient.init_event_id";
+    public static final int REQUEST_CODE_SETTINGS_CHANGED = 0;
     private String context;
     private GoogleMap map;
     private TextView mMapText;
     private List<Polyline> polylines = new ArrayList<>();
-    private final int POLYLINE_WIDTH = 8;
+    private final int POLYLINE_WIDTH = 10;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater layoutInflater, ViewGroup container, Bundle savedInstanceState) {
@@ -111,10 +114,35 @@ public class MapFragment extends Fragment
                 return true;
             case R.id.settingsMenuItem:
                 Intent intentSettings = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(intentSettings);
+                startActivityForResult(intentSettings, REQUEST_CODE_SETTINGS_CHANGED);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == REQUEST_CODE_SETTINGS_CHANGED) {
+                if (data != null) {
+                    boolean settingsChanged = data.getBooleanExtra(
+                            SettingsActivity.EXTRA_SETTINGS_CHANGED, true
+                    );
+                    // Refresh the map if settings have changed
+                    if (settingsChanged && map != null) {
+                        map.clear();
+
+                        List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
+                        events = DataCache.sortEvents(events);
+                        events = DataCache.getInstance().applyEventFilters(events);
+
+                        for (Event event : events) {
+                            addEventMarker(event);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -123,7 +151,7 @@ public class MapFragment extends Fragment
         map = googleMap;
         List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
         events = DataCache.sortEvents(events);
-        events = DataCache.getInstance().applyFilters(events);
+        events = DataCache.getInstance().applyEventFilters(events);
 
         for (Event event : events) {
             addEventMarker(event);
@@ -225,6 +253,8 @@ public class MapFragment extends Fragment
         }
 
         Person person = DataCache.getInstance().findPerson(event.getPersonID());
+        Event fBirth = getBirth(person.getFatherID());
+        Event mBirth = getBirth(person.getMotherID());
 
         // Draw person's life story lines if setting is on
         if (DataCache.getInstance().isLifeStoryLines()) {
@@ -240,14 +270,34 @@ public class MapFragment extends Fragment
         }
 
         // Draw spouse line if setting is on
-        if (DataCache.getInstance().isSpouseLines()) {
+        if (DataCache.getInstance().isSpouseLines()
+                && DataCache.getInstance().isFilterFemaleEvents()) {
             Event sBirth = getBirth(person.getSpouseID());
-            drawOneLine(event, sBirth, width, Color.GREEN);
+            drawOneLine(event, sBirth, width, Color.RED);
         }
 
         // Draw family lines if setting is on
         if (DataCache.getInstance().isFamilyTreeLines()) {
-            drawParentLines(event, width);
+
+            // Only draw father's side if setting is enabled
+            if (DataCache.getInstance().isFilterFatherSide()) {
+                if (DataCache.getInstance().isFilterMaleEvents()) {
+                    // Draw father line
+                    drawOneLine(event, fBirth, width, Color.BLUE);
+                }
+                // Being recursively drawing ancestor lines
+                drawParentLines(fBirth, width - 2);
+            }
+
+            // Only draw mother's side if setting is enabled
+            if (DataCache.getInstance().isFilterMotherSide()) {
+                if (DataCache.getInstance().isFilterFemaleEvents()) {
+                    // Draw mother line
+                    drawOneLine(event, mBirth, width, Color.MAGENTA);
+                }
+                // Begin recursively drawing ancestor lines
+                drawParentLines(mBirth, width - 2);
+            }
         }
     }
 
@@ -257,26 +307,30 @@ public class MapFragment extends Fragment
         }
 
         Person person = DataCache.getInstance().findPerson(event.getPersonID());
-
-        // Draw father line
-        Event fBirth = getBirth(person.getFatherID());
-        drawOneLine(event, fBirth, width, Color.BLUE);
-
-        // Draw mother line
         Event mBirth = getBirth(person.getMotherID());
-        drawOneLine(event, mBirth, width, Color.RED);
+        Event fBirth = getBirth(person.getFatherID());
+
+        if (DataCache.getInstance().isFilterMaleEvents()) {
+            // Draw father line
+            drawOneLine(event, fBirth, width, Color.BLUE);
+        }
+
+        if (DataCache.getInstance().isFilterFemaleEvents()) {
+            // Draw mother line
+            drawOneLine(event, mBirth, width, Color.MAGENTA);
+        }
 
         // Recursively draw parent lines
-        drawParentLines(fBirth, width - 2);
         drawParentLines(mBirth, width - 2);
+        drawParentLines(fBirth, width - 2);
     }
 
     private void drawOneLine(Event event1, Event event2, int width, int color) {
         if (event1 == null || event2 == null) {
             return;
         }
-        if (width < 0) {
-            width = 2;
+        if (width <= 0) {
+            width = 1;
         }
 
         Polyline line = map.addPolyline(new PolylineOptions()

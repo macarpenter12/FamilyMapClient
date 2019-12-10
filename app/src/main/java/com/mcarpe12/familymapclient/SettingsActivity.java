@@ -5,14 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.mcarpe12.familymapclient.service.DataCache;
 
 public class SettingsActivity extends AppCompatActivity
-        implements Switch.OnCheckedChangeListener {
+        implements Switch.OnCheckedChangeListener,
+        TextView.OnClickListener {
     private Switch mLifeStoryLines;
     private Switch mFamilyTreeLines;
     private Switch mSpouseLines;
@@ -20,6 +24,10 @@ public class SettingsActivity extends AppCompatActivity
     private Switch mFilterMother;
     private Switch mFilterMale;
     private Switch mFilterFemale;
+    private View mLogoutItem;
+
+    public static final String EXTRA_SETTINGS_CHANGED = "com.mcarpe12.familymapclient.settings_changed";
+    private boolean settingsChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +42,7 @@ public class SettingsActivity extends AppCompatActivity
         mFilterMother = findViewById(R.id.switch_filter_mother);
         mFilterMale = findViewById(R.id.switch_filter_male);
         mFilterFemale = findViewById(R.id.switch_filter_female);
+        mLogoutItem = findViewById(R.id.clayout_logout);
 
         mLifeStoryLines.setChecked(DataCache.getInstance().isLifeStoryLines());
         mFamilyTreeLines.setChecked(DataCache.getInstance().isFamilyTreeLines());
@@ -50,15 +59,15 @@ public class SettingsActivity extends AppCompatActivity
         mFilterMother.setOnCheckedChangeListener(this);
         mFilterMale.setOnCheckedChangeListener(this);
         mFilterFemale.setOnCheckedChangeListener(this);
+
+        mLogoutItem.setOnClickListener(this);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -75,5 +84,19 @@ public class SettingsActivity extends AppCompatActivity
         DataCache.getInstance().setFilterMotherSide(mFilterMother.isChecked());
         DataCache.getInstance().setFilterMaleEvents(mFilterMale.isChecked());
         DataCache.getInstance().setFilterFemaleEvents(mFilterFemale.isChecked());
+
+        settingsChanged = true;
+
+        Intent data = new Intent();
+        data.putExtra(EXTRA_SETTINGS_CHANGED, settingsChanged);
+        setResult(RESULT_OK, data);
+    }
+
+    @Override
+    public void onClick(View v) {
+        DataCache.clear();
+        Intent logoutIntent = new Intent(this, MainActivity.class);
+        logoutIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(logoutIntent);
     }
 }

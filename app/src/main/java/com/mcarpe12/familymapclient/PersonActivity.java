@@ -1,9 +1,7 @@
 package com.mcarpe12.familymapclient;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -46,17 +44,30 @@ public class PersonActivity extends AppCompatActivity {
 
         String personID = getIntent().getStringExtra(EXTRA_PERSON_ID);
         Person person = DataCache.getInstance().findPerson(personID);
-        Person father = DataCache.getInstance().findPerson(person.getFatherID());
-        Person mother = DataCache.getInstance().findPerson(person.getMotherID());
-        Person spouse = DataCache.getInstance().findPerson(person.getSpouseID());
-        Person child = DataCache.getInstance().findChild(person.getPersonID());
+        Person father = null;
+        Person mother = null;
+        Person spouse = null;
+        Person child = DataCache.getInstance().findChild(personID);
+
+        // Filter family members by active settings
+        List<Person> filteredPersons = new ArrayList<>(DataCache.getInstance().getPersons());
+        filteredPersons = DataCache.getInstance().applyPersonFilters(filteredPersons);
+        for (Person p : filteredPersons) {
+            if (p.getPersonID().equals(person.getFatherID())) {
+                father = p;
+            } else if (p.getPersonID().equals(person.getMotherID())) {
+                mother = p;
+            } else if (p.getPersonID().equals(person.getSpouseID())) {
+                spouse = p;
+            }
+        }
 
         ExpandableListView expandableListView = findViewById(R.id.expandableListView);
 
         // Add all events associated with given person and apply filters
         List<Event> lifeEvents = new ArrayList<>(DataCache.getInstance().getEventsByPerson(personID));
         lifeEvents = DataCache.sortEvents(lifeEvents);
-        lifeEvents = DataCache.getInstance().applyFilters(lifeEvents);
+        lifeEvents = DataCache.getInstance().applyEventFilters(lifeEvents);
 
         // Add the existing (non-null) family members in this order:
         // Father, Mother, Spouse, Child

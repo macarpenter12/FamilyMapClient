@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,8 +67,11 @@ public class SearchListFragment extends Fragment
     }
 
     private void updateUI(String term) {
-        Person[] persons = DataCache.getInstance().getPersons();
-        List<Event> events = DataCache.getInstance().getEvents();
+        List<Person> persons = new ArrayList<>(DataCache.getInstance().getPersons());
+        persons = DataCache.getInstance().applyPersonFilters(persons);
+        List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
+        events = DataCache.sortEvents(events);
+        events = DataCache.getInstance().applyEventFilters(events);
         mPersons.clear();
         mEvents.clear();
 

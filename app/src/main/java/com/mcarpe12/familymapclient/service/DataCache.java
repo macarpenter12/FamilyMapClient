@@ -56,6 +56,22 @@ public class DataCache {
     private boolean filterMaleEvents = true;
     private boolean filterFemaleEvents = true;
 
+    public static DataCache getInstance() {
+        if (instance == null) {
+            instance = new DataCache();
+        }
+
+        return instance;
+    }
+
+    public static void clear() {
+        instance = new DataCache();
+    }
+
+    private DataCache() {
+
+    }
+
     public boolean isLifeStoryLines() {
         return lifeStoryLines;
     }
@@ -110,18 +126,6 @@ public class DataCache {
 
     public void setFilterFemaleEvents(boolean filterFemaleEvents) {
         this.filterFemaleEvents = filterFemaleEvents;
-    }
-
-    public static DataCache getInstance() {
-        if (instance == null) {
-            instance = new DataCache();
-        }
-
-        return instance;
-    }
-
-    private DataCache() {
-
     }
 
     public List<Event> getEvents() {
@@ -216,9 +220,10 @@ public class DataCache {
      *
      * @param events
      */
-    public List<Event> applyFilters(List<Event> events) {
+    public List<Event> applyEventFilters(List<Event> events) {
         Person father = findPerson(DataCache.getInstance().getUserPerson().getFatherID());
         Person mother = findPerson(DataCache.getInstance().getUserPerson().getMotherID());
+
         if (!DataCache.getInstance().isFilterFatherSide()) {
             events = removeAncestorEvents(father, events);
         }
@@ -246,9 +251,8 @@ public class DataCache {
             return events;
         }
 
-        List<Event> eventsToRemove = new ArrayList<>();
-
         // Remove the given person's events
+        List<Event> eventsToRemove = new ArrayList<>();
         for (Event event : events) {
             if (event.getPersonID().equals(person.getPersonID())) {
                 eventsToRemove.add(event);
@@ -268,9 +272,10 @@ public class DataCache {
         if (events == null) {
             return null;
         }
+        gender = gender.toLowerCase();
 
+        // Remove any events associated with persons of given gender
         List<Event> eventsToRemove = new ArrayList<>();
-
         for (Event event : events) {
             if (findPerson(event.getPersonID()).getGender().equals(gender)) {
                 eventsToRemove.add(event);
@@ -281,8 +286,8 @@ public class DataCache {
         return events;
     }
 
-    public Person[] getPersons() {
-        return persons;
+    public List<Person> getPersons() {
+        return Arrays.asList(persons);
     }
 
     public Person findPerson(String personID) {
@@ -296,7 +301,18 @@ public class DataCache {
      * @return Child of given parent.
      */
     public Person findChild(String personID) {
-        return childrenByPersonID.get(personID);
+        Person child = childrenByPersonID.get(personID);
+        if (child == null) {
+             return null;
+        }
+
+        if (child.getGender().equals("m") && isFilterMaleEvents()) {
+            return child;
+        } else if (child.getGender().equals("f") && isFilterFemaleEvents()) {
+            return child;
+        } else {
+            return null;
+        }
     }
 
     public HashMap<String, Integer> getEventTypes() {
@@ -318,6 +334,60 @@ public class DataCache {
                 childrenByPersonID.put(person.getMotherID(), person);
             }
         }
+    }
+
+    public List<Person> applyPersonFilters(List<Person> persons) {
+        Person father = findPerson(DataCache.getInstance().getUserPerson().getFatherID());
+        Person mother = findPerson(DataCache.getInstance().getUserPerson().getMotherID());
+
+        if (!DataCache.getInstance().isFilterFatherSide()) {
+            persons = removeAncestors(father, persons);
+        }
+        if (!DataCache.getInstance().isFilterMotherSide()) {
+            persons = removeAncestors(mother, persons);
+        }
+        if (!DataCache.getInstance().isFilterMaleEvents()) {
+            persons = removePersonsByGender("m", persons);
+        }
+        if (!DataCache.getInstance().isFilterFemaleEvents()) {
+            persons = removePersonsByGender("f", persons);
+        }
+
+        return persons;
+    }
+
+    public List<Person> removeAncestors(Person person, List<Person> persons) {
+        if (person == null || persons == null) {
+            return persons;
+        }
+
+        persons.remove(person);
+
+        // Recursively remove all ancestors
+        Person father = DataCache.getInstance().findPerson(person.getFatherID());
+        Person mother = DataCache.getInstance().findPerson(person.getMotherID());
+        removeAncestors(father, persons);
+        removeAncestors(mother, persons);
+
+        return persons;
+    }
+
+    public List<Person> removePersonsByGender(String gender, List<Person> persons) {
+        if (persons == null) {
+            return null;
+        }
+        gender = gender.toLowerCase();
+
+        // Remove all persons matching given gender
+        List<Person> personsToRemove = new ArrayList<>();
+        for(Person p : persons) {
+            if (p.getGender().equals(gender)) {
+                personsToRemove.add(p);
+            }
+        }
+        persons.removeAll(personsToRemove);
+
+        return persons;
     }
 
     public String getAuthToken() {
