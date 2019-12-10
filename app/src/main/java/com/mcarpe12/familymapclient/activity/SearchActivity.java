@@ -1,4 +1,4 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,6 +7,9 @@ import androidx.fragment.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+
+import com.mcarpe12.familymapclient.R;
+import com.mcarpe12.familymapclient.fragment.SearchListFragment;
 
 public class SearchActivity extends AppCompatActivity {
 

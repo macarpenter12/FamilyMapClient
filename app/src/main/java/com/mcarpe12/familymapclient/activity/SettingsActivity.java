@@ -1,17 +1,17 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.mcarpe12.familymapclient.R;
 import com.mcarpe12.familymapclient.service.DataCache;
 
 public class SettingsActivity extends AppCompatActivity

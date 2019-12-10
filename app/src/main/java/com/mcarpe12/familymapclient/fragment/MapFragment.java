@@ -1,4 +1,4 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -32,6 +32,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.mcarpe12.familymapclient.R;
+import com.mcarpe12.familymapclient.activity.PersonActivity;
+import com.mcarpe12.familymapclient.activity.SearchActivity;
+import com.mcarpe12.familymapclient.activity.SettingsActivity;
 import com.mcarpe12.familymapclient.service.DataCache;
 
 import java.util.ArrayList;

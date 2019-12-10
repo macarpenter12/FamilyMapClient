@@ -1,4 +1,4 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.fragment;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.mcarpe12.familymapclient.R;
+import com.mcarpe12.familymapclient.activity.EventActivity;
+import com.mcarpe12.familymapclient.activity.PersonActivity;
 import com.mcarpe12.familymapclient.service.DataCache;
 
 import java.util.ArrayList;
@@ -68,7 +71,6 @@ public class SearchListFragment extends Fragment
 
     private void updateUI(String term) {
         List<Person> persons = new ArrayList<>(DataCache.getInstance().getPersons());
-        persons = DataCache.getInstance().applyPersonFilters(persons);
         List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
         events = DataCache.sortEvents(events);
         events = DataCache.getInstance().applyEventFilters(events);

@@ -97,6 +97,6 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        tools:context=".PersonActivity"/>
+        tools:context=".activity.PersonActivity"/>
 
 </LinearLayout>

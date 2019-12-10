@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,17 +26,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PersonActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".activity.PersonActivity"
+            android:parentActivityName=".activity.MainActivity" />
         <activity
-            android:name=".EventActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".activity.EventActivity"
+            android:parentActivityName=".activity.MainActivity" />
         <activity
-            android:name=".SearchActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".activity.SearchActivity"
+            android:parentActivityName=".activity.MainActivity" />
         <activity
-            android:name=".SettingsActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".activity.SettingsActivity"
+            android:parentActivityName=".activity.MainActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

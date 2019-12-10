@@ -1,4 +1,4 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,13 +6,10 @@ import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.mcarpe12.familymapclient.service.DataCache;
-
-import familymap.Event;
+import com.mcarpe12.familymapclient.fragment.MapFragment;
+import com.mcarpe12.familymapclient.R;
 
 public class EventActivity extends AppCompatActivity {
     public static final String EXTRA_EVENT_ID = "com.mcarpe12.familymapclient.event_id";

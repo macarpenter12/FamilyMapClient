@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:dividerHeight="0.5dp"
     android:divider="@android:color/darker_gray"
-    tools:context=".SettingsActivity">
+    tools:context=".activity.SettingsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clayout_life_story_lines"

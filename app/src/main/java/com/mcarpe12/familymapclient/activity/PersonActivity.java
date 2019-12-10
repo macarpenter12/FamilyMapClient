@@ -1,4 +1,4 @@
-package com.mcarpe12.familymapclient;
+package com.mcarpe12.familymapclient.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+import com.mcarpe12.familymapclient.R;
 import com.mcarpe12.familymapclient.service.DataCache;
 
 import java.util.ArrayList;
@@ -51,7 +52,6 @@ public class PersonActivity extends AppCompatActivity {
 
         // Filter family members by active settings
         List<Person> filteredPersons = new ArrayList<>(DataCache.getInstance().getPersons());
-        filteredPersons = DataCache.getInstance().applyPersonFilters(filteredPersons);
         for (Person p : filteredPersons) {
             if (p.getPersonID().equals(person.getFatherID())) {
                 father = p;
