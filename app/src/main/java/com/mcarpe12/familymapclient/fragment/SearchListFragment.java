@@ -70,20 +70,36 @@ public class SearchListFragment extends Fragment
     }
 
     private void updateUI(String term) {
-        List<Person> persons = new ArrayList<>(DataCache.getInstance().getPersons());
-        List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
-        events = DataCache.sortEvents(events);
-        events = DataCache.getInstance().applyEventFilters(events);
         mPersons.clear();
         mEvents.clear();
+        mPersons.addAll(searchPersons(term));
+        mEvents.addAll(searchEvents(term));
+
+        // Update Recycler View
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public static List<Person> searchPersons(String term) {
+        term = term.toLowerCase();
+        List<Person> persons = new ArrayList<>(DataCache.getInstance().getPersons());
+        List<Person> personsToAdd = new ArrayList<>();
 
         // Add all matching Persons
         for (Person person : persons) {
             if (person.getFirstName().toLowerCase().contains(term)
                     || person.getLastName().toLowerCase().contains(term)) {
-                mPersons.add(person);
+                personsToAdd.add(person);
             }
         }
+        return personsToAdd;
+    }
+
+    public static List<Event> searchEvents(String term) {
+        term = term.toLowerCase();
+        List<Event> events = new ArrayList<>(DataCache.getInstance().getEvents());
+        events = DataCache.sortEvents(events);
+        events = DataCache.getInstance().applyEventFilters(events);
+        List<Event> eventsToAdd = new ArrayList<>();
 
         // Add all matching Events
         for (Event event : events) {
@@ -93,12 +109,10 @@ public class SearchListFragment extends Fragment
                     || event.getCountry().toLowerCase().contains(term)
                     || person.getFirstName().toLowerCase().contains(term)
                     || person.getLastName().toLowerCase().contains(term)) {
-                mEvents.add(event);
+                eventsToAdd.add(event);
             }
         }
-
-        // Update Recycler View
-        mAdapter.notifyDataSetChanged();
+        return eventsToAdd;
     }
 
     private class SearchHolder extends RecyclerView.ViewHolder

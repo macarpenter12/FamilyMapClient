@@ -72,7 +72,6 @@ public class Proxy {
     }
 
     public static RegisterResponse register(URL url, RegisterRequest req) throws IOException {
-
         HttpURLConnection connection = createConnection(url, "POST", null, true);
         connection.connect();
 
@@ -139,7 +138,6 @@ public class Proxy {
             return null;
         }
     }
-
 
     public static <T> T deserialize(String value, Class<T> returnType) {
         return (new Gson()).fromJson(value, returnType);

@@ -62,10 +62,13 @@ public class ProxyLoginTest {
         // Login Response should not be null, but its data members should be
         LoginResponse logRes = Proxy.login(url, logReq1);
         assertNull(logRes.getAuthToken());
+
         logRes = Proxy.login(url, logReq2);
         assertNull(logRes.getPersonID());
+
         logRes = Proxy.login(url, logReq3);
         assertNull(logRes.getUserName());
+
         logRes = Proxy.login(url, logReq5);
         String message = logRes.getMessage();
         boolean error = message.contains("error");

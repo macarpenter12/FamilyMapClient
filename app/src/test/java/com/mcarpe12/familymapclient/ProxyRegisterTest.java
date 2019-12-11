@@ -12,10 +12,7 @@ import familymap.Person;
 import request.RegisterRequest;
 import response.RegisterResponse;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertNull;
+import static junit.framework.TestCase.*;
 
 public class ProxyRegisterTest {
     private String SERVER_URL = "http://localhost:8080";
@@ -31,7 +28,7 @@ public class ProxyRegisterTest {
         URL url = new URL(registerURL);
 
         String userName = UUID.randomUUID().toString();
-        userName = userName.substring(0, 8);
+        userName = userName.substring(0, 7);
 
         RegisterRequest registerReq = new RegisterRequest(
                 userName, PASSWORD, EMAIL, FIRST_NAME, LAST_NAME, GENDER
@@ -57,7 +54,7 @@ public class ProxyRegisterTest {
     @Test
     public void register_invalid() throws Exception {
         String userName = UUID.randomUUID().toString();
-        userName = userName.substring(0, 8);
+        userName = userName.substring(0, 7);
 
         String registerURL = SERVER_URL + "/user/register";
         URL url = new URL(registerURL);
