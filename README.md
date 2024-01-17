@@ -1,4 +1,4 @@
-#FamilyMapClient
+# FamilyMapClient
 This project contains an Android application to be used with [FamilyMapServer](https://github.com/macarpenter12/FamilyMapServer).
 
 This app:
